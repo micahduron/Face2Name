@@ -95,6 +95,11 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
         void onCameraStart();
 
         /**
+         * Executed immediately before the release of a camera connection.
+         */
+        void onCameraRelease();
+
+        /**
          * Executed when the camera is ready to fetch preview frames. This is always executed
          * after the corresponding call to onCameraStart().
          */
@@ -138,6 +143,8 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
             throw new RuntimeException("Called releaseCamera in an uninitialized state.");
         }
         mCamera.stopPreview();
+
+        mCallbacks.onCameraRelease();
 
         mCamera.release();
         mCamera = null;
