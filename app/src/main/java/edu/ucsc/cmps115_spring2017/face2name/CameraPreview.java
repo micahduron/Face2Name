@@ -140,7 +140,7 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
     /** Private methods **/
     private void uninitializeCamera() {
         if (!isInitialized()) {
-            throw new RuntimeException("Called releaseCamera in an uninitialized state.");
+            throw new RuntimeException("Cannot call uninitializeCamera in an uninitialized state.");
         }
         mCamera.stopPreview();
 
