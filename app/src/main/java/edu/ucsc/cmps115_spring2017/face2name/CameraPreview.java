@@ -108,6 +108,13 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
         void onCameraReady(int width, int height);
 
         /**
+         * Executed when the size of the preview frame changes.
+         * @param width -- Preview's new width in pixels.
+         * @param height -- Preview's new height in pixels.
+         */
+        void onPreviewResize(int width, int height);
+
+        /**
          * Executed on every preview frame.
          * @param bitmap -- A Bitmap object containing the current preview frame's image data.
          */
