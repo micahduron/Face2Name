@@ -102,8 +102,10 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
         /**
          * Executed when the camera is ready to fetch preview frames. This is always executed
          * after the corresponding call to onCameraStart().
+         * @param width -- Preview's width in pixels.
+         * @param height -- Preview's height in pixels.
          */
-        void onCameraReady();
+        void onCameraReady(int width, int height);
 
         /**
          * Executed on every preview frame.
@@ -167,7 +169,8 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
 
     private void tryOnCameraReady() {
         if (!mReadyCallbackExecuted && isReady()) {
-            mCallbacks.onCameraReady();
+            Camera.Size previewDimensions = mCamera.getParameters().getPreviewSize();
+            mCallbacks.onCameraReady(previewDimensions.width, previewDimensions.height);
 
             mReadyCallbackExecuted = true;
         }
