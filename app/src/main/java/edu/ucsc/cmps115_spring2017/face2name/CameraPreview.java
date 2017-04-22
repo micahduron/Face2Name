@@ -4,6 +4,7 @@ package edu.ucsc.cmps115_spring2017.face2name;
  * Created by micah on 4/19/17.
  */
 
+import edu.ucsc.cmps115_spring2017.face2name.CameraCapabilities.CameraCapability;
 import android.util.AttributeSet;
 import android.content.Context;
 import android.view.TextureView;
@@ -45,6 +46,26 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
         mCameraStarter.execute(cameraId);
 
         setSurfaceTextureListener(this);
+    }
+
+    public void init(int cameraType, PreviewCallbacks callbacks, CameraCapability... capabilities) {
+        setCapabilities(capabilities);
+        init(cameraType, callbacks);
+    }
+
+    public void setCapabilities(CameraCapability... capabilities) {
+        releaseCapabilities();
+
+        mCapabilities = capabilities;
+        initializeCapabilities();
+    }
+
+    public void releaseCapabilities() {
+        if (!isInitialized()) return;
+
+        for (final CameraCapability cap : mCapabilities) {
+            cap.onRelease(mCamera);
+        }
     }
 
     public void release() {
@@ -143,7 +164,12 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture texture) {
-        mCallbacks.onPreviewFrame(createBitmap());
+        Bitmap bitmap = createBitmap();
+
+        for (final CameraCapability cap : mCapabilities) {
+            cap.onPreviewFrame(bitmap, mCamera);
+        }
+        mCallbacks.onPreviewFrame(bitmap);
     }
 
     /** Private methods **/
@@ -152,6 +178,8 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
             throw new RuntimeException("Cannot call uninitializeCamera in an uninitialized state.");
         }
         mCamera.stopPreview();
+
+        releaseCapabilities();
 
         mCallbacks.onCameraRelease();
 
@@ -167,10 +195,20 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
 
             mCallbacks.onCameraStart();
 
+            initializeCapabilities();
+
             tryOnCameraReady();
         } catch (IOException ex) {
             camera.release();
             // ...
+        }
+    }
+
+    private void initializeCapabilities() {
+        if (!isInitialized()) return;
+
+        for (final CameraCapability cap : mCapabilities) {
+            cap.onAttach(mCamera);
         }
     }
 
@@ -240,4 +278,5 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
     private CameraStarter mCameraStarter;
     private Bitmap mBitmap;
     private boolean mReadyCallbackExecuted;
+    private CameraCapability[] mCapabilities;
 }
