@@ -76,7 +76,7 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
     public void release() {
         if (isInitialized()) {
             uninitializeCamera();
-        } else if (mCameraStarter.getStatus() == AsyncTask.Status.RUNNING) {
+        } else if (mCameraStarter != null && mCameraStarter.getStatus() == AsyncTask.Status.RUNNING) {
             mCameraStarter.cancel(false);
         }
         mReadyCallbackExecuted = false;
