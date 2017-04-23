@@ -66,6 +66,7 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
 
     public void releaseCapabilities() {
         if (!isInitialized()) return;
+        if (mCapabilities == null) return;
 
         for (final CameraCapability cap : mCapabilities) {
             cap.onRelease(mCamera);
@@ -170,8 +171,10 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
     public void onSurfaceTextureUpdated(SurfaceTexture texture) {
         Bitmap bitmap = createBitmap();
 
-        for (final CameraCapability cap : mCapabilities) {
-            cap.onPreviewFrame(bitmap, mCamera);
+        if (mCapabilities != null) {
+            for (final CameraCapability cap : mCapabilities) {
+                cap.onPreviewFrame(bitmap, mCamera);
+            }
         }
         mCallbacks.onPreviewFrame(bitmap);
     }
@@ -210,6 +213,7 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
 
     private void initializeCapabilities() {
         if (!isInitialized()) return;
+        if (mCapabilities == null) return;
 
         for (final CameraCapability cap : mCapabilities) {
             cap.onAttach(mCamera);
