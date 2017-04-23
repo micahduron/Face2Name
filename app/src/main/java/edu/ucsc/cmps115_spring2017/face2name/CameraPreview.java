@@ -27,6 +27,10 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
         super(context);
     }
 
+    public CameraPreview(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
+
     public CameraPreview(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
