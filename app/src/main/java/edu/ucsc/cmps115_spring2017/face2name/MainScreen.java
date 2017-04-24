@@ -48,20 +48,8 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     }
 
     @Override
-    public void onCameraReady(int width, int height) {
-        mCameraPreview.setBitmap(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888));
-
+    public void onCameraReady() {
         mCameraPreview.startPreview();
-    }
-
-    @Override
-    public void onPreviewResize(int width, int height) {
-
-    }
-
-    @Override
-    public void onPreviewFrame(Bitmap bitmap) {
-
     }
 
     private CameraPreview mCameraPreview;

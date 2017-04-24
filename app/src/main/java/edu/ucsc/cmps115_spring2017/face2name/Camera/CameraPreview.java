@@ -105,10 +105,6 @@ public final class CameraPreview
         return isInitialized() && (getSurfaceTexture() != null);
     }
 
-    public void setBitmap(Bitmap bitmap) {
-        mBitmap = bitmap;
-    }
-
     public void setCallbacks(PreviewCallbacks callbacks) {
         mCallbacks = callbacks;
     }
@@ -129,23 +125,8 @@ public final class CameraPreview
         /**
          * Executed when the camera is ready to fetch preview frames. This is always executed
          * after the corresponding call to onCameraStart().
-         * @param width -- Preview's width in pixels.
-         * @param height -- Preview's height in pixels.
          */
-        void onCameraReady(int width, int height);
-
-        /**
-         * Executed when the size of the preview frame changes.
-         * @param width -- Preview's new width in pixels.
-         * @param height -- Preview's new height in pixels.
-         */
-        void onPreviewResize(int width, int height);
-
-        /**
-         * Executed on every preview frame.
-         * @param bitmap -- A Bitmap object containing the current preview frame's image data.
-         */
-        void onPreviewFrame(Bitmap bitmap);
+        void onCameraReady();
     }
 
     /** TextureView.SurfaceTextureListener overrides **/
@@ -177,7 +158,6 @@ public final class CameraPreview
                 cap.onPreviewFrame(bitmap, mCamera);
             }
         }
-        mCallbacks.onPreviewFrame(bitmap);
     }
 
     @Override
@@ -223,8 +203,7 @@ public final class CameraPreview
 
     private void tryOnCameraReady() {
         if (!mReadyCallbackExecuted && isReady()) {
-            Camera.Size previewDimensions = getCamera().getParameters().getPreviewSize();
-            mCallbacks.onCameraReady(previewDimensions.width, previewDimensions.height);
+            mCallbacks.onCameraReady();
 
             mReadyCallbackExecuted = true;
         }
@@ -239,10 +218,6 @@ public final class CameraPreview
             mCameraInst.release();
             // ...
         }
-    }
-
-    private Bitmap createBitmap() {
-        return mBitmap == null ? getBitmap() : getBitmap(mBitmap);
     }
 
     /** Static helper functions **/
@@ -262,7 +237,6 @@ public final class CameraPreview
     /** Data members **/
     private PreviewCallbacks mCallbacks;
     private CameraInstance mCameraInst;
-    private Bitmap mBitmap;
     private boolean mReadyCallbackExecuted;
     private CameraCapability[] mCapabilities;
 }
