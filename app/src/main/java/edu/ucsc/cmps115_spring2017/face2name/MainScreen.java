@@ -1,6 +1,5 @@
 package edu.ucsc.cmps115_spring2017.face2name;
 
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
