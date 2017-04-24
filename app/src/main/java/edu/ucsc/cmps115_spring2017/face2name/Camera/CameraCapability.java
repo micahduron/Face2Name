@@ -7,12 +7,12 @@ import android.hardware.Camera;
  * Created by micah on 4/21/17.
  */
 
-public interface CameraCapability {
-    void onAttach(Camera camera);
+abstract class CameraCapability {
+    abstract protected void onAttach(Camera camera);
 
-    Bitmap onPreFrame(Camera camera);
+    abstract protected Bitmap onPreFrame(Camera camera);
 
-    void onFrame(Bitmap bitmap, Camera camera);
+    abstract protected void onFrame(Bitmap bitmap, Camera camera);
 
-    void onRelease(Camera camera);
+    abstract protected void onRelease(Camera camera);
 }
