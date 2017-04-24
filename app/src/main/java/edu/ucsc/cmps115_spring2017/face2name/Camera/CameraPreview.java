@@ -1,4 +1,4 @@
-package edu.ucsc.cmps115_spring2017.face2name;
+package edu.ucsc.cmps115_spring2017.face2name.Camera;
 
 /**
  * Created by micah on 4/19/17.

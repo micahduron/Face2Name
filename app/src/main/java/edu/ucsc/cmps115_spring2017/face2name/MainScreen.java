@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
+
 
 public class MainScreen extends AppCompatActivity implements CameraPreview.PreviewCallbacks {
 
