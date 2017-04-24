@@ -7,7 +7,7 @@ import android.hardware.Camera;
  * Created by micah on 4/21/17.
  */
 
-abstract class CameraCapability {
+public abstract class CameraCapability {
     abstract protected void onAttach(Camera camera);
 
     abstract protected Bitmap onPreFrame(Camera camera);
