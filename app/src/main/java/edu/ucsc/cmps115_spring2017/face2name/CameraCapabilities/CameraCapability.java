@@ -10,7 +10,9 @@ import android.hardware.Camera;
 public interface CameraCapability {
     void onAttach(Camera camera);
 
-    void onPreviewFrame(Bitmap bitmap, Camera camera);
+    Bitmap onPreFrame(Camera camera);
+
+    void onFrame(Bitmap bitmap, Camera camera);
 
     void onRelease(Camera camera);
 }

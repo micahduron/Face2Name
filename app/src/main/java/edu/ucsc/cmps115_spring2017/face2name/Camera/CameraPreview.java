@@ -151,11 +151,14 @@ public final class CameraPreview
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture texture) {
-        Bitmap bitmap = createBitmap();
-
         if (mCapabilities != null) {
             for (final CameraCapability cap : mCapabilities) {
-                cap.onPreviewFrame(bitmap, mCamera);
+                Bitmap bitmap = cap.onPreFrame(getCamera());
+
+                if (bitmap != null) {
+                    getBitmap(bitmap);
+                }
+                cap.onFrame(bitmap, getCamera());
             }
         }
     }
