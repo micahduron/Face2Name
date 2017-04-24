@@ -4,7 +4,6 @@ package edu.ucsc.cmps115_spring2017.face2name.Camera;
  * Created by micah on 4/19/17.
  */
 
-import edu.ucsc.cmps115_spring2017.face2name.CameraCapabilities.CameraCapability;
 import android.util.AttributeSet;
 import android.content.Context;
 import android.view.TextureView;

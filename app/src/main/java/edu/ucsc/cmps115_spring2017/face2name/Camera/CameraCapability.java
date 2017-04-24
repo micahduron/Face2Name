@@ -1,4 +1,4 @@
-package edu.ucsc.cmps115_spring2017.face2name.CameraCapabilities;
+package edu.ucsc.cmps115_spring2017.face2name.Camera;
 
 import android.graphics.Bitmap;
 import android.hardware.Camera;
