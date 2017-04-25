@@ -13,8 +13,8 @@ import android.util.Log;
 
 public class DatabaseOperations extends SQLiteOpenHelper {
     public static final int database_version = 1;
-    public String CREATE_QUERY = "CREATE_TABLE" + TableData.TableInfo.TABLE_NAME + "(" + TableData.TableInfo.USER_NAME + " TEXT," + TableData.TableInfo.USER_PASS + "TEXT );";
-
+    public String CREATE_QUERY = "CREATE TABLE" + TableData.TableInfo.TABLE_NAME + "(" + TableData.TableInfo.USER_NAME + " TEXT," + TableData.TableInfo.USER_PASS + "TEXT );";
+    public String INSERT_QUERY = "INSERT INTO " + TableData.TableInfo.TABLE_NAME + " VALUES ('Bob', 'password);";
 
     public DatabaseOperations(Context context) {
         super(context, TableData.TableInfo.DATABASE_NAME, null, database_version);
@@ -34,8 +34,8 @@ public class DatabaseOperations extends SQLiteOpenHelper {
 
     }
 
-    public void insertInfo(SQLiteDatabase sdb, String query) {
-        sdb.execSQL(query);
+    public void insertInfo(SQLiteDatabase sdb) {
+        sdb.execSQL(INSERT_QUERY);
     }
 
     /*
