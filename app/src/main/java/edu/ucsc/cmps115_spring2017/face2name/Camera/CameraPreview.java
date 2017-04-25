@@ -125,7 +125,7 @@ public final class CameraPreview
          * Executed when the camera is ready to fetch preview frames. This is always executed
          * after the corresponding call to onCameraStart().
          */
-        void onCameraReady();
+        void onPreviewReady();
     }
 
     /** TextureView.SurfaceTextureListener overrides **/
@@ -133,7 +133,7 @@ public final class CameraPreview
     public void onSurfaceTextureAvailable(SurfaceTexture texture, int width, int height) {
         setCameraTexture();
 
-        tryOnCameraReady();
+        tryOnPreviewReady();
     }
 
     @Override
@@ -171,7 +171,7 @@ public final class CameraPreview
 
             initializeCapabilities();
 
-            tryOnCameraReady();
+            tryOnPreviewReady();
         } catch (IOException ex) {
             mCameraInst.release();
             // ...
@@ -203,9 +203,9 @@ public final class CameraPreview
         }
     }
 
-    private void tryOnCameraReady() {
+    private void tryOnPreviewReady() {
         if (!mReadyCallbackExecuted && isReady()) {
-            mCallbacks.onCameraReady();
+            mCallbacks.onPreviewReady();
 
             mReadyCallbackExecuted = true;
         }
