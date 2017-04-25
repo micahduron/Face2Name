@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
+import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability;
+import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability.OrientationSetting;
 
 
 public class MainScreen extends AppCompatActivity implements CameraPreview.PreviewCallbacks {
@@ -20,6 +22,7 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
         super.onStart();
 
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_preview);
+        mCameraPreview.setCapabilities(new OrientationCapability(OrientationSetting.PORTRAIT));
     }
 
     @Override
