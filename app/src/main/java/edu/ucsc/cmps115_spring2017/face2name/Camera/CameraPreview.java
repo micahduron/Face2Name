@@ -1,26 +1,31 @@
-package edu.ucsc.cmps115_spring2017.face2name;
+package edu.ucsc.cmps115_spring2017.face2name.Camera;
 
 /**
  * Created by micah on 4/19/17.
  */
 
-import edu.ucsc.cmps115_spring2017.face2name.CameraCapabilities.CameraCapability;
 import android.util.AttributeSet;
 import android.content.Context;
 import android.view.TextureView;
 import android.graphics.SurfaceTexture;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
-import android.os.AsyncTask;
 import java.lang.*;
 import java.io.*;
 
 
 
-public final class CameraPreview extends TextureView implements TextureView.SurfaceTextureListener {
+public final class CameraPreview
+        extends TextureView
+        implements TextureView.SurfaceTextureListener, CameraInstance.Callbacks
+{
     /** Configuration constants **/
     public static final int BACK_CAMERA = Camera.CameraInfo.CAMERA_FACING_BACK;
     public static final int FRONT_CAMERA = Camera.CameraInfo.CAMERA_FACING_FRONT;
+
+    {
+        mCameraInst = new CameraInstance();
+    }
 
     /** Constructors **/
     public CameraPreview(Context context) {
@@ -37,8 +42,9 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
 
     /** Public methods **/
     public void init(int cameraType, PreviewCallbacks callbacks) {
-        release();
-
+        if (isInitialized()) {
+            throw new RuntimeException("Cannot call init while object is initialized.");
+        }
         mCallbacks = callbacks;
 
         int cameraId = CameraPreview.findCameraIdByType(cameraType);
@@ -46,8 +52,7 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
         if (cameraId == -1) {
             throw new RuntimeException("Could not find a camera of the given type.");
         }
-        mCameraStarter = new CameraStarter();
-        mCameraStarter.execute(cameraId);
+        mCameraInst.open(cameraId, this);
 
         setSurfaceTextureListener(this);
     }
@@ -69,43 +74,34 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
         if (mCapabilities == null) return;
 
         for (final CameraCapability cap : mCapabilities) {
-            cap.onRelease(mCamera);
+            cap.onRelease(getCamera());
         }
     }
 
     public void release() {
-        if (isInitialized()) {
-            uninitializeCamera();
-        } else if (mCameraStarter != null && mCameraStarter.getStatus() == AsyncTask.Status.RUNNING) {
-            mCameraStarter.cancel(false);
-        }
-        mReadyCallbackExecuted = false;
+        mCameraInst.release();
     }
 
     public void startPreview() {
         if (!isReady()) {
             throw new RuntimeException("Cannot call startPreview in an unready state.");
         }
-        mCamera.startPreview();
+        getCamera().startPreview();
     }
 
     public void stopPreview() {
         if (!isReady()) {
             throw new RuntimeException("Cannot call stopPreview in an unready state.");
         }
-        mCamera.stopPreview();
+        getCamera().stopPreview();
     }
 
     public boolean isInitialized() {
-        return mCamera != null;
+        return mCameraInst.isInitialized();
     }
 
     public boolean isReady() {
         return isInitialized() && (getSurfaceTexture() != null);
-    }
-
-    public void setBitmap(Bitmap bitmap) {
-        mBitmap = bitmap;
     }
 
     public void setCallbacks(PreviewCallbacks callbacks) {
@@ -128,23 +124,8 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
         /**
          * Executed when the camera is ready to fetch preview frames. This is always executed
          * after the corresponding call to onCameraStart().
-         * @param width -- Preview's width in pixels.
-         * @param height -- Preview's height in pixels.
          */
-        void onCameraReady(int width, int height);
-
-        /**
-         * Executed when the size of the preview frame changes.
-         * @param width -- Preview's new width in pixels.
-         * @param height -- Preview's new height in pixels.
-         */
-        void onPreviewResize(int width, int height);
-
-        /**
-         * Executed on every preview frame.
-         * @param bitmap -- A Bitmap object containing the current preview frame's image data.
-         */
-        void onPreviewFrame(Bitmap bitmap);
+        void onCameraReady();
     }
 
     /** TextureView.SurfaceTextureListener overrides **/
@@ -169,36 +150,22 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture texture) {
-        Bitmap bitmap = createBitmap();
-
         if (mCapabilities != null) {
             for (final CameraCapability cap : mCapabilities) {
-                cap.onPreviewFrame(bitmap, mCamera);
+                Bitmap bitmap = cap.onPreFrame(getCamera());
+
+                if (bitmap != null) {
+                    getBitmap(bitmap);
+                }
+                cap.onFrame(bitmap, getCamera());
             }
         }
-        mCallbacks.onPreviewFrame(bitmap);
     }
 
-    /** Private methods **/
-    private void uninitializeCamera() {
-        if (!isInitialized()) {
-            throw new RuntimeException("Cannot call uninitializeCamera in an uninitialized state.");
-        }
-        mCamera.stopPreview();
-
-        releaseCapabilities();
-
-        mCallbacks.onCameraRelease();
-
-        mCamera.release();
-        mCamera = null;
-    }
-
-    private void setupCamera(Camera camera) {
+    @Override
+    public void onCameraStart() {
         try {
-            setCameraTexture(camera);
-
-            mCamera = camera;
+            getCamera().setPreviewTexture(getSurfaceTexture());
 
             mCallbacks.onCameraStart();
 
@@ -206,24 +173,39 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
 
             tryOnCameraReady();
         } catch (IOException ex) {
-            camera.release();
+            mCameraInst.release();
             // ...
         }
     }
+
+    @Override
+    public void onCameraRelease() {
+        releaseCapabilities();
+
+        mCallbacks.onCameraRelease();
+
+        mReadyCallbackExecuted = false;
+    }
+
+    protected Camera getCamera() {
+        return mCameraInst.getCamera();
+    }
+
+    /** Private methods **/
+
 
     private void initializeCapabilities() {
         if (!isInitialized()) return;
         if (mCapabilities == null) return;
 
         for (final CameraCapability cap : mCapabilities) {
-            cap.onAttach(mCamera);
+            cap.onAttach(getCamera());
         }
     }
 
     private void tryOnCameraReady() {
         if (!mReadyCallbackExecuted && isReady()) {
-            Camera.Size previewDimensions = mCamera.getParameters().getPreviewSize();
-            mCallbacks.onCameraReady(previewDimensions.width, previewDimensions.height);
+            mCallbacks.onCameraReady();
 
             mReadyCallbackExecuted = true;
         }
@@ -233,19 +215,11 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
         if (!isInitialized()) return;
 
         try {
-            setCameraTexture(mCamera);
+            getCamera().setPreviewTexture(getSurfaceTexture());
         } catch (IOException ex) {
-            uninitializeCamera();
+            mCameraInst.release();
             // ...
         }
-    }
-
-    private void setCameraTexture(Camera camera) throws IOException {
-        camera.setPreviewTexture(getSurfaceTexture());
-    }
-
-    private Bitmap createBitmap() {
-        return mBitmap == null ? getBitmap() : getBitmap(mBitmap);
     }
 
     /** Static helper functions **/
@@ -262,29 +236,9 @@ public final class CameraPreview extends TextureView implements TextureView.Surf
         return -1;
     }
 
-    /** Helper classes **/
-    private class CameraStarter extends AsyncTask<Integer, Void, Camera> {
-        @Override
-        protected Camera doInBackground(Integer... cameraId) {
-            return Camera.open(cameraId[0]);
-        }
-
-        @Override
-        protected void onCancelled(Camera cameraInst) {
-            cameraInst.release();
-        }
-
-        @Override
-        protected void onPostExecute(Camera cameraInst) {
-            setupCamera(cameraInst);
-        }
-    }
-
     /** Data members **/
     private PreviewCallbacks mCallbacks;
-    private Camera mCamera;
-    private CameraStarter mCameraStarter;
-    private Bitmap mBitmap;
+    private CameraInstance mCameraInst;
     private boolean mReadyCallbackExecuted;
     private CameraCapability[] mCapabilities;
 }
