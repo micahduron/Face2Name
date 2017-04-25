@@ -34,6 +34,11 @@ public class DatabaseOperations extends SQLiteOpenHelper {
 
     }
 
+    public void insertInfo(SQLiteDatabase sdb, String query) {
+        sdb.execSQL(query);
+    }
+
+    /*
     public void putInformation(DatabaseOperations dop, String name, String pass) {
         SQLiteDatabase SQ = dop.getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -41,5 +46,5 @@ public class DatabaseOperations extends SQLiteOpenHelper {
         cv.put(TableData.TableInfo.USER_PASS, pass);
         long k = SQ.insert(TableData.TableInfo.TABLE_NAME, null, cv);
         Log.d("Database operations", "One raw inserted");
-    }
+    }*/
 }
