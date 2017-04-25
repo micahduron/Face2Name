@@ -50,6 +50,11 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     }
 
     @Override
+    public void onCameraError(Exception ex) {
+
+    }
+
+    @Override
     public void onPreviewReady() {
         mCameraPreview.startPreview();
     }

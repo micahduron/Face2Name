@@ -122,6 +122,11 @@ public final class CameraPreview
         void onCameraRelease();
 
         /**
+         * Executed when an error is encountered during the camera initialization process.
+         */
+        void onCameraError(Exception ex);
+
+        /**
          * Executed when the camera is ready to fetch preview frames. This is always executed
          * after the corresponding call to onCameraStart().
          */
@@ -174,7 +179,8 @@ public final class CameraPreview
             tryOnPreviewReady();
         } catch (IOException ex) {
             mCameraInst.release();
-            // ...
+
+            mCallbacks.onCameraError(ex);
         }
     }
 
@@ -218,7 +224,8 @@ public final class CameraPreview
             getCamera().setPreviewTexture(getSurfaceTexture());
         } catch (IOException ex) {
             mCameraInst.release();
-            // ...
+
+            mCallbacks.onCameraError(ex);
         }
     }
 
