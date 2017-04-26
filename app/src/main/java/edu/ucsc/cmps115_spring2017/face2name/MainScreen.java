@@ -1,7 +1,9 @@
 package edu.ucsc.cmps115_spring2017.face2name;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
 import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability;
@@ -9,6 +11,8 @@ import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability.Orient
 
 
 public class MainScreen extends AppCompatActivity implements CameraPreview.PreviewCallbacks {
+    Context ctx = this;
+    DatabaseOperations db = new DatabaseOperations(ctx);
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -60,4 +64,8 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     }
 
     private CameraPreview mCameraPreview;
+
+    public void insert (View v) {
+        db.insertInfo(db);
+    }
 }
