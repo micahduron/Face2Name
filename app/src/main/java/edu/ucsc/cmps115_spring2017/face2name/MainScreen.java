@@ -1,9 +1,11 @@
 package edu.ucsc.cmps115_spring2017.face2name;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.util.Log;
 
 import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability;
@@ -72,11 +74,29 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
         int u_y = mLayerView.getRectPoint("Upper Y");
         int l_y = mLayerView.getRectPoint("Lower Y");
 
+        Log.e("PRESS", "LX: " + l_x + " RX: " + r_x + "UY: " + u_y + "LY: " + l_y);
+
         int touchX = (int) event.getX();
         int touchY = (int) event.getY();
-        if (event.getAction() == MotionEvent.ACTION_BUTTON_PRESS) {
-            if ((touchX >= l_x && touchX <= r_x) && (touchY >= l_y && touchY <= u_y)) {
-                System.out.println("Touched Rectangle, start activity.");
+        Log.e("PRESS", "GET_X: "+touchX+ " GET_Y: "+touchY);
+        Log.e("PRESS", "EVENT ACTION: "+event.getAction()+ " ACTION BUTTON PRESS: "+ MotionEvent.ACTION_BUTTON_PRESS);
+        if (event.getAction() == MotionEvent.ACTION_BUTTON_PRESS ||
+                event.getAction() == MotionEvent.ACTION_BUTTON_RELEASE ||
+                event.getAction() == MotionEvent.ACTION_DOWN ||
+                event.getAction() == MotionEvent.ACTION_UP) {
+            Log.e("PRESS", "RECT PRESSED");
+            if ((touchX >= l_x && touchX <= r_x) && (touchY >= u_y && touchY <= l_y)) {
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                        this);
+
+                // set title
+                alertDialogBuilder.setTitle("Rectangle Pressed");
+
+                // create alert dialog
+                AlertDialog alertDialog = alertDialogBuilder.create();
+
+                // show it
+                alertDialog.show();
             }
         }
         return true;
@@ -84,6 +104,5 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
 
     private CameraPreview mCameraPreview;
     private LayerView mLayerView;
-
 }
 
