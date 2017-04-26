@@ -1,8 +1,11 @@
 package edu.ucsc.cmps115_spring2017.face2name;
 
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+
+import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
+import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability;
+import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability.OrientationSetting;
 
 
 public class MainScreen extends AppCompatActivity implements CameraPreview.PreviewCallbacks {
@@ -19,6 +22,7 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
         super.onStart();
 
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_preview);
+        mCameraPreview.setCapabilities(new OrientationCapability(OrientationSetting.PORTRAIT));
     }
 
     @Override
@@ -46,20 +50,13 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     }
 
     @Override
-    public void onCameraReady(int width, int height) {
-        mCameraPreview.setBitmap(Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888));
+    public void onCameraError(Exception ex) {
 
+    }
+
+    @Override
+    public void onPreviewReady() {
         mCameraPreview.startPreview();
-    }
-
-    @Override
-    public void onPreviewResize(int width, int height) {
-
-    }
-
-    @Override
-    public void onPreviewFrame(Bitmap bitmap) {
-
     }
 
     private CameraPreview mCameraPreview;

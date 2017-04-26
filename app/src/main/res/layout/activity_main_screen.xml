@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <edu.ucsc.cmps115_spring2017.face2name.CameraPreview
+    <edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview
         android:id="@+id/camera_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
