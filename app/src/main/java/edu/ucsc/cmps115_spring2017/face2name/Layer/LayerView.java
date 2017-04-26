@@ -16,17 +16,14 @@ public final class LayerView extends View
 {
     private Rect rectangle;
     private Paint paint;
-
+    //just example code
     public LayerView(Context context) {
         super(context);
         int x = 50;
         int y = 50;
         int sideLength = 200;
-
-        // create a rectangle that we'll draw later
         rectangle = new Rect(x, y, sideLength, sideLength);
 
-        // create the Paint and set its color
         paint = new Paint();
         paint.setColor(Color.GRAY);
     }
