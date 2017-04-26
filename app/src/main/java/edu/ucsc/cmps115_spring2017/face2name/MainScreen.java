@@ -1,5 +1,6 @@
 package edu.ucsc.cmps115_spring2017.face2name;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
@@ -25,6 +26,7 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
 
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_preview);
         mCameraPreview.setCapabilities(new OrientationCapability(OrientationSetting.PORTRAIT));
+        //mLayerView = (LayerView) findViewById(R.id.layer_view);
 
     }
 
@@ -63,5 +65,6 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     }
 
     private CameraPreview mCameraPreview;
-    private LayerView layerView;
+    private LayerView mLayerView;
 }
+

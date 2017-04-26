@@ -14,23 +14,15 @@ import android.view.View;
 
 public final class LayerView extends View
 {
-    private Rect rectangle;
-    private Paint paint;
     //just example code
     public LayerView(Context context) {
         super(context);
-        int x = 50;
-        int y = 50;
-        int sideLength = 200;
-        rectangle = new Rect(x, y, sideLength, sideLength);
-
-        paint = new Paint();
-        paint.setColor(Color.GRAY);
+    }
+    public LayerView(Context context, AttributeSet set) {
+        super(context, set);
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        canvas.drawColor(Color.BLUE);
-        canvas.drawRect(rectangle, paint);
+    public LayerView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 }

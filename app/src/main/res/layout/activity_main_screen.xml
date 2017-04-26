@@ -10,14 +10,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <TextView
+
+    <edu.ucsc.cmps115_spring2017.face2name.Layer.LayerView
+        android:id="@+id/layer_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+    <Button
+        android:id="@+id/name_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dip"
-        android:layout_gravity="center_horizontal|bottom"
+        android:layout_gravity="center_horizontal|center_vertical"
         android:padding="12dip"
         android:background="#AA000000"
         android:textColor="#ffffffff"
-        android:text="Input Name" />
+        android:text="Input Name"
+        android:textSize="40px"/>
 
 </FrameLayout>
