@@ -10,9 +10,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.view.View;
+import android.view.SurfaceView;
 
-public final class LayerView extends View
+public final class LayerView extends SurfaceView
 {
     //just example code
     public LayerView(Context context) {

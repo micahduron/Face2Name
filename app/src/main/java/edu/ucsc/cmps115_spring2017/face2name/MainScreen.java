@@ -26,7 +26,7 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
 
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_preview);
         mCameraPreview.setCapabilities(new OrientationCapability(OrientationSetting.PORTRAIT));
-        //mLayerView = (LayerView) findViewById(R.id.layer_view);
+        mLayerView = (LayerView) findViewById(R.id.layer_view);
 
     }
 
