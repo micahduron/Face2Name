@@ -18,24 +18,25 @@ public class OrientationCapability extends CameraCapability {
     }
 
     @Override
-    protected void onAttach(Camera camera) {
+    protected void onAttach(CameraInstance cameraInst) {
         int cameraAngle = OrientationCapability.calcCameraAngle(mOrientationSetting);
-        camera.setDisplayOrientation(cameraAngle);
+
+        cameraInst.getCamera().setDisplayOrientation(cameraAngle);
     }
 
     @Override
-    protected Bitmap onPreFrame(Camera camera) {
+    protected Bitmap onPreFrame(CameraInstance cameraInst) {
         return null;
     }
 
     @Override
-    protected void onFrame(Bitmap bitmap, Camera camera) {
+    protected void onFrame(Bitmap bitmap, CameraInstance cameraInst) {
 
     }
 
     @Override
-    protected void onRelease(Camera camera) {
-
+    protected void onRelease(CameraInstance cameraInst) {
+        mCameraInst = null;
     }
 
     private static int calcCameraAngle(OrientationSetting setting) {
@@ -50,4 +51,5 @@ public class OrientationCapability extends CameraCapability {
     }
 
     private OrientationSetting mOrientationSetting;
+    private CameraInstance mCameraInst;
 }
