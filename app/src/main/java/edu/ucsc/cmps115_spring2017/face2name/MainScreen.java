@@ -3,6 +3,7 @@ package edu.ucsc.cmps115_spring2017.face2name;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MotionEvent;
 
 import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability;
@@ -11,12 +12,11 @@ import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability.Orient
 import edu.ucsc.cmps115_spring2017.face2name.Layer.LayerView;
 
 
-public class MainScreen extends AppCompatActivity implements CameraPreview.PreviewCallbacks {
+public class MainScreen extends AppCompatActivity implements CameraPreview.PreviewCallbacks{
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main_screen);
     }
 
@@ -64,7 +64,26 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
         mCameraPreview.startPreview();
     }
 
+
+
+    public boolean onTouchEvent(MotionEvent event) {
+        int l_x = mLayerView.getRectPoint("Left X");
+        int r_x = mLayerView.getRectPoint("Right X");
+        int u_y = mLayerView.getRectPoint("Upper Y");
+        int l_y = mLayerView.getRectPoint("Lower Y");
+
+        int touchX = (int) event.getX();
+        int touchY = (int) event.getY();
+        if (event.getAction() == MotionEvent.ACTION_BUTTON_PRESS) {
+            if ((touchX >= l_x && touchX <= r_x) && (touchY >= l_y && touchY <= u_y)) {
+                System.out.println("Touched Rectangle, start activity.");
+            }
+        }
+        return true;
+    }
+
     private CameraPreview mCameraPreview;
     private LayerView mLayerView;
+
 }
 
