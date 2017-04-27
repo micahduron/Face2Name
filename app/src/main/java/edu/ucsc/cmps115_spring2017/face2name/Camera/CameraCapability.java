@@ -8,11 +8,11 @@ import android.hardware.Camera;
  */
 
 public abstract class CameraCapability {
-    abstract protected void onAttach(Camera camera);
+    abstract protected void onAttach(CameraInstance cameraInst);
 
-    abstract protected Bitmap onPreFrame(Camera camera);
+    abstract protected Bitmap onPreFrame(CameraInstance cameraInst);
 
-    abstract protected void onFrame(Bitmap bitmap, Camera camera);
+    abstract protected void onFrame(Bitmap bitmap, CameraInstance cameraInst);
 
-    abstract protected void onRelease(Camera camera);
+    abstract protected void onRelease(CameraInstance cameraInst);
 }
