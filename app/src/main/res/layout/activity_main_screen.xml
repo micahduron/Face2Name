@@ -15,10 +15,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
+
         <edu.ucsc.cmps115_spring2017.face2name.Layer.LayerView
             android:id="@+id/layer_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+
         <Button
             android:id="@+id/name_button"
             android:layout_width="wrap_content"
@@ -28,6 +30,7 @@
             android:background="#22000000"
             android:textColor="#ffffffff"
             android:text="Input Name"
-            android:textSize="40px"/></FrameLayout>
+            android:textSize="40px"/>
+    </FrameLayout>
 
 </FrameLayout>

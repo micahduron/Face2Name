@@ -5,58 +5,69 @@ package edu.ucsc.cmps115_spring2017.face2name.Layer;
  */
 
 import android.content.Context;
-
 import android.util.AttributeSet;
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.view.View;
-import 	android.view.MotionEvent;
 
+import java.util.IllegalFormatCodePointException;
 
 public final class LayerView extends View
 {
-    private Paint paint;
-    int color;
-    int param1, param2, param3, param4;
+    private Paint mPaint;
+    private int mColor;
+
     public LayerView(Context context) {
         super(context);
+        init();
     }
     public LayerView(Context context, AttributeSet set) {
         super(context, set);
-        paint = new Paint();
-        color =  Color.parseColor("#e60000");
+        init();
     }
 
     public LayerView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    private void init(){
+
+        //initialize draw variables.
+        mColor =  Color.parseColor("#e60000");
+        mPaint = new Paint();
+        mPaint.setColor(mColor); // set mColor
+        mPaint.setStyle(Paint.Style.STROKE);
+        mPaint.setStrokeWidth(10); // set stroke width
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        paint.setColor(color); // set color
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(10); // set stroke width
+        //draws a rectangle in the middle rectangle of a 3 x 3 grid
         canvas.drawRect(getLeft()+(getRight()-getLeft())/3,
                 getTop()+(getBottom()-getTop())/3,
                 getRight()-(getRight()-getLeft())/3,
-                getBottom()-(getBottom()-getTop())/3, paint);
+                getBottom()-(getBottom()-getTop())/3, mPaint);
     }
 
-    public int getRectPoint(String point){
-        switch(point){
-            case "Left X":
+    public int getRectPoint(coordinate_sections bound) throws IllegalArgumentException{
+        //returns the coordinates of a given bound that we are looking for
+        switch(bound){
+            case LEFT_X:
                 return getLeft()+(getRight()-getLeft())/3;
-            case "Right X":
+            case RIGHT_X:
                 return getRight()-(getRight()-getLeft())/3;
-            case "Upper Y":
+            case UPPER_Y:
                 return getTop()+(getBottom()-getTop())/3;
-            case "Lower Y":
+            case LOWER_Y:
                 return getBottom()-(getBottom()-getTop())/3;
         }
-        return 0;
+        throw new IllegalArgumentException("Unexpected enum");
+    }
+
+    public enum coordinate_sections {
+        LEFT_X, RIGHT_X, UPPER_Y, LOWER_Y
     }
 
 }
