@@ -73,8 +73,8 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
         That we are supporting, this constants are defined manually at the bottom of
         MainScreen.java
         */
-        return (inputEvent == ACTION_DOWN ||
-                inputEvent == ACTION_UP);
+        return (inputEvent == MotionEvent.ACTION_DOWN ||
+                inputEvent == MotionEvent.ACTION_UP);
     }
     
     public boolean onTouchEvent(MotionEvent event) {
@@ -117,7 +117,5 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     private LayerView mLayerView;
 
     //Custom constants as a replacement for MotionEvent.constants
-    private static final int ACTION_DOWN = 0;
-    private static final int ACTION_UP = 1;
 }
 
