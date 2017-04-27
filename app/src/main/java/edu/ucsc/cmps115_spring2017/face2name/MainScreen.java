@@ -84,7 +84,7 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
         int touchY = (int) event.getY();
        // Log.d("PRESS", "GET_X: "+touchX+ " GET_Y: "+touchY);
        // Log.d("PRESS", "EVENT ACTION: "+event.getAction());
-        if (isPressEvent(event.getAction()))
+        if (isPressEvent(event.getActionMasked()))
         {
             //returns the coordinates of the red rectangle
             int leftXCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.LEFT_X);
