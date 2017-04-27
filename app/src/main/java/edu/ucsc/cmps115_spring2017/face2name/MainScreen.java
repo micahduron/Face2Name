@@ -68,15 +68,12 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     that night be associated with a press.
     */
     private boolean isPressEvent(int inputEvent){
-
         /*
         Because MotionEvent constants are not supported in the lower versions of API
         That we are supporting, this constants are defined manually at the bottom of
         MainScreen.java
         */
-        return (inputEvent ==  ACTION_BUTTON_PRESS||
-                inputEvent == ACTION_BUTTON_RELEASE ||
-                inputEvent == ACTION_DOWN ||
+        return (inputEvent == ACTION_DOWN ||
                 inputEvent == ACTION_UP);
     }
     
@@ -85,38 +82,33 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
         //gets the coordinate of press event
         int touchX = (int) event.getX();
         int touchY = (int) event.getY();
-
-
+       // Log.d("PRESS", "GET_X: "+touchX+ " GET_Y: "+touchY);
+       // Log.d("PRESS", "EVENT ACTION: "+event.getAction());
         if (isPressEvent(event.getAction()))
         {
-            // try/catch block because getRectPoint throws an IllegalArgumentException
-            try{
-                //returns the coordinates of the red rectangle
-                int leftXCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.LEFT_X);
-                int rightXCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.RIGHT_X);
-                int upperYCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.UPPER_Y);
-                int lowerYCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.LOWER_Y);
+            //returns the coordinates of the red rectangle
+            int leftXCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.LEFT_X);
+            int rightXCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.RIGHT_X);
+            int upperYCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.UPPER_Y);
+            int lowerYCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.LOWER_Y);
 
-                //If the press was within the X bounds and within the Y bounds, continue
-                if ((touchX >= leftXCoordinate && touchX <= rightXCoordinate) &&
-                        (touchY >= upperYCoordinate && touchY <= lowerYCoordinate)) {
+            //If the press was within the X bounds and within the Y bounds, continue
+            if ((touchX >= leftXCoordinate && touchX <= rightXCoordinate) &&
+                    (touchY >= upperYCoordinate && touchY <= lowerYCoordinate)) {
 
-                   //build dialong
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+               //build dialong
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
-                    // set title
-                    alertDialogBuilder.setTitle("Rectangle Pressed");
+                // set title
+                alertDialogBuilder.setTitle("Rectangle Pressed");
 
-                    // create alert dialog
-                    AlertDialog alertDialog = alertDialogBuilder.create();
+                // create alert dialog
+                AlertDialog alertDialog = alertDialogBuilder.create();
 
-                    // show it
-                    alertDialog.show();
-                }
+                // show it
+                alertDialog.show();
             }
-            catch(IllegalArgumentException iArg){
-                    Log.d("ILLEGALARGUMENT", "IllegalArgumentException: " + iArg);
-            }
+
         }
         return true;
     }
@@ -127,9 +119,5 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     //Custom constants as a replacement for MotionEvent.constants
     private static final int ACTION_DOWN = 0;
     private static final int ACTION_UP = 1;
-    private static final int ACTION_BUTTON_PRESS = 11;
-    private static final int ACTION_BUTTON_RELEASE = 12;
-
-
 }
 
