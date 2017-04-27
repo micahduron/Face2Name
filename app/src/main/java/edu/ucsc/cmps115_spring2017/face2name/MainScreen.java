@@ -68,11 +68,6 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     that night be associated with a press.
     */
     private boolean isPressEvent(int inputEvent){
-        /*
-        Because MotionEvent constants are not supported in the lower versions of API
-        That we are supporting, this constants are defined manually at the bottom of
-        MainScreen.java
-        */
         return (inputEvent == MotionEvent.ACTION_DOWN ||
                 inputEvent == MotionEvent.ACTION_UP);
     }
@@ -115,7 +110,5 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
 
     private CameraPreview mCameraPreview;
     private LayerView mLayerView;
-
-    //Custom constants as a replacement for MotionEvent.constants
 }
 
