@@ -15,7 +15,6 @@ import edu.ucsc.cmps115_spring2017.face2name.Layer.LayerView;
 public class MainScreen extends AppCompatActivity implements CameraPreview.PreviewCallbacks {
     Context ctx = this;
     DatabaseOperations db = new DatabaseOperations(ctx);
-public class MainScreen extends AppCompatActivity implements CameraPreview.PreviewCallbacks{
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
