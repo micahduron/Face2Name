@@ -57,6 +57,16 @@ final class CameraInstance {
         return mCameraId;
     }
 
+    public Camera.CameraInfo getCameraInfo() {
+        return getCameraInfo(new Camera.CameraInfo());
+    }
+
+    public Camera.CameraInfo getCameraInfo(Camera.CameraInfo info) {
+        Camera.getCameraInfo(getCameraId(), info);
+
+        return info;
+    }
+
     public void release() {
         InitState initState = getInitState();
 
