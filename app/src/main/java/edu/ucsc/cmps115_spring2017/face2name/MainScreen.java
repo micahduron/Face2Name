@@ -1,10 +1,14 @@
 package edu.ucsc.cmps115_spring2017.face2name;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.app.AlertDialog;
 import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 
 import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability;
@@ -25,6 +29,7 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_preview);
         mCameraPreview.setCapabilities(new OrientationCapability(getWindowManager().getDefaultDisplay()));
         mLayerView = (LayerView) findViewById(R.id.layer_view);
+        nameField = (EditText)findViewById(R.id.nameText);
     }
 
     @Override
@@ -104,9 +109,45 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
             }
 
         }
+
+        // If we tapped on the screen and if we didn't tap in the text box
+        if(event.getAction() == MotionEvent.ACTION_DOWN && !getLocationOnScreen(nameField).contains(touchX,touchY)) {
+
+            // If the textbox is hidden, bring up the textbox and the keyboard
+            if(nameField.getVisibility() == View.INVISIBLE) {
+                nameField.setVisibility(View.VISIBLE);
+                nameField.requestFocus();
+                InputMethodManager input = (InputMethodManager) getSystemService(MainScreen.INPUT_METHOD_SERVICE);
+                input.showSoftInput(nameField, InputMethodManager.SHOW_IMPLICIT);
+            }
+
+            // Otherwise, hide the textbox and close the keyboard
+            else {
+                InputMethodManager input = (InputMethodManager) getSystemService(MainScreen.INPUT_METHOD_SERVICE);
+                input.hideSoftInputFromWindow(nameField.getWindowToken(), 0);
+                nameField.setVisibility(View.INVISIBLE);
+                nameField.clearFocus();
+            }
+        }
         return true;
     }
 
+    // Makes a rectangle so we can check if we tapped inside of our textbox
+    protected Rect getLocationOnScreen(EditText mEditText) {
+        Rect mRect = new Rect();
+        int[] location = new int[2];
+
+        mEditText.getLocationOnScreen(location);
+
+        mRect.left = location[0];
+        mRect.top = location[1];
+        mRect.right = location[0] + mEditText.getWidth();
+        mRect.bottom = location[1] + mEditText.getHeight();
+
+        return mRect;
+    }
+
+    private EditText nameField;
     private CameraPreview mCameraPreview;
     private LayerView mLayerView;
 }

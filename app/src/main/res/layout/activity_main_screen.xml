@@ -21,16 +21,20 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <Button
-            android:id="@+id/name_button"
+        <EditText
+            android:id="@+id/nameText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|bottom"
+            android:background="#DD808080"
             android:padding="12dip"
-            android:background="#22000000"
-            android:textColor="#ffffffff"
-            android:text="Input Name"
-            android:textSize="40px"/>
+            android:hint="Enter name here"
+            android:inputType="textPersonName"
+            android:textColor="@android:color/white"
+            android:textColorHint="#DDC0C0C0"
+            android:textCursorDrawable="@null"
+            android:visibility="invisible"
+            android:textSize="40px" />
     </FrameLayout>
 
 </FrameLayout>
