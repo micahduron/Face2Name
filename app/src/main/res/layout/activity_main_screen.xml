@@ -22,7 +22,7 @@
             android:layout_height="match_parent" />
 
         <EditText
-            android:id="@+id/nameText"
+            android:id="@+id/name_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|bottom"
@@ -34,7 +34,7 @@
             android:textColorHint="#DDC0C0C0"
             android:textCursorDrawable="@null"
             android:visibility="invisible"
-            android:textSize="40px" />
+            android:textSize="20sp" />
     </FrameLayout>
 
 </FrameLayout>
