@@ -133,7 +133,7 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     }
 
     // Makes a rectangle so we can check if we tapped inside of our textbox
-    protected Rect getLocationOnScreen( ) {
+    private Rect getLocationOnScreen( ) {
         Rect tempRect = new Rect();
         int[] location = new int[2];
 
