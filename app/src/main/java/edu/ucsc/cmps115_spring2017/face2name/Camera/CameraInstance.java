@@ -31,6 +31,7 @@ final class CameraInstance {
         }
         mCameraId = cameraId;
         mCallbacks = callbacks;
+        mCancelInit = false;
 
         mInitState = InitState.RUNNING;
 
@@ -78,6 +79,10 @@ final class CameraInstance {
         } else if (initState == InitState.RUNNING) {
             mCancelInit = true;
         }
+        cleanup();
+    }
+
+    private void cleanup() {
         mInitState = InitState.UNINITIALIZED;
         mCameraId = -1;
     }
@@ -85,25 +90,45 @@ final class CameraInstance {
     public interface Callbacks {
         void onCameraStart();
         void onCameraRelease();
+        void onCameraError(Exception ex);
     }
 
     /** Helper classes **/
-    private class CameraStarter extends AsyncTask<Integer, Void, Camera> {
+    private static class StarterResult {
+        Camera camera;
+        Exception ex;
+    }
+
+    private class CameraStarter extends AsyncTask<Integer, Void, StarterResult> {
         @Override
-        protected Camera doInBackground(Integer... cameraId) {
-            return Camera.open(cameraId[0]);
+        protected StarterResult doInBackground(Integer... cameraId) {
+            StarterResult result = new StarterResult();
+
+            try {
+                result.camera = Camera.open(cameraId[0]);
+            } catch (Exception ex) {
+                result.ex = ex;
+            }
+            return result;
         }
 
         @Override
-        protected void onPostExecute(Camera cameraInst) {
+        protected void onPostExecute(StarterResult result) {
+            if (result.camera == null) {
+                mCallbacks.onCameraError(result.ex);
+                cleanup();
+
+                return;
+            }
+            Camera camera = result.camera;
+
             if (mCancelInit) {
-                cameraInst.release();
-                mCancelInit = false;
+                camera.release();
 
                 return;
             }
             mInitState = InitState.FINISHED;
-            mCamera = cameraInst;
+            mCamera = camera;
 
             mCallbacks.onCameraStart();
         }

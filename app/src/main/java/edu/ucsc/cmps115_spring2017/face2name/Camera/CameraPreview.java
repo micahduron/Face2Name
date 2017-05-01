@@ -193,6 +193,11 @@ public final class CameraPreview
         mReadyCallbackExecuted = false;
     }
 
+    @Override
+    public void onCameraError(Exception ex) {
+        mCallbacks.onCameraError(ex);
+    }
+
     protected Camera getCamera() {
         return mCameraInst.getCamera();
     }
