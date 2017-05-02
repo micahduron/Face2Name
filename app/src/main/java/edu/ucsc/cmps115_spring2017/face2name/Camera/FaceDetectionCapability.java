@@ -46,6 +46,11 @@ public final class FaceDetectionCapability extends CameraCapability implements C
     @Override
     public void onAttach(CameraInstance cameraInst) {
         mCameraInst = cameraInst;
+        Camera.Parameters cameraParams = mCameraInst.getCamera().getParameters();
+
+        if (cameraParams.getMaxNumDetectedFaces() == 0) {
+            throw new RuntimeException("The current camera does not support face detection.");
+        }
         mCameraInst.getCamera().setFaceDetectionListener(this);
     }
 
