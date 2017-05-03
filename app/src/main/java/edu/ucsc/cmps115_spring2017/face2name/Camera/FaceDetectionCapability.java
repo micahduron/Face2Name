@@ -36,6 +36,11 @@ public final class FaceDetectionCapability extends CameraCapability implements C
             mRect = face.rect;
         }
 
+        /**
+         * Returns a face's bounding rectangle with respect to a reference coordinate system
+         * ranging from the points (-1000, -1000) to (1000, 1000).
+         * @return A face's bounding rectangle normalized to a reference coordinate system.
+         */
         public Rect getRect() {
             return mRect;
         }
