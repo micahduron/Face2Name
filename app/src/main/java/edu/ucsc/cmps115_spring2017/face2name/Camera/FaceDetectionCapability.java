@@ -1,6 +1,7 @@
 package edu.ucsc.cmps115_spring2017.face2name.Camera;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.hardware.Camera;
 
@@ -32,6 +33,9 @@ public final class FaceDetectionCapability extends CameraCapability implements C
     }
 
     public class Face {
+        final static int NORMALIZED_WIDTH = 2000;
+        final static int NORMALIZED_HEIGHT = 2000;
+
         Face(Camera.Face face) {
             mRect = face.rect;
         }
@@ -46,6 +50,27 @@ public final class FaceDetectionCapability extends CameraCapability implements C
         }
 
         final private Rect mRect;
+    }
+
+    /**
+     * Returns an affine transform that converts a normalized face rectangle to one conforming to
+     * specific screen parameters.
+     * @param angle Camera's orientation angle. The same value used to call Camera.setOrientationAngle(int).
+     * @param width Width (in pixels) of the camera frame.
+     * @param height Height (in pixels) of the camera frame.
+     * @return Transformation matrix.
+     */
+    public static Matrix getFaceTransform(int angle, int width, int height) {
+        Matrix transform = new Matrix();
+
+        float widthF = width;
+        float heightF = height;
+
+        transform.postRotate(angle);
+        transform.postScale(widthF / Face.NORMALIZED_WIDTH, heightF / Face.NORMALIZED_HEIGHT);
+        transform.postTranslate(widthF / 2, heightF / 2);
+
+        return transform;
     }
 
     @Override
