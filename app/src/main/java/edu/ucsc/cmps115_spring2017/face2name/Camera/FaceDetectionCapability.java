@@ -40,7 +40,7 @@ public final class FaceDetectionCapability extends CameraCapability implements C
             return mRect;
         }
 
-        private Rect mRect;
+        final private Rect mRect;
     }
 
     @Override
