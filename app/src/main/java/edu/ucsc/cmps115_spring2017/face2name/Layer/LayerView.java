@@ -5,6 +5,9 @@ package edu.ucsc.cmps115_spring2017.face2name.Layer;
  */
 
 import android.content.Context;
+import android.graphics.PorterDuff;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -44,32 +47,46 @@ public final class LayerView extends TextureView
         setOpaque(false);
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        //draws a rectangle in the middle rectangle of a 3 x 3 grid
-        canvas.drawRect(getLeft()+(getRight()-getLeft())/3,
-                getTop()+(getBottom()-getTop())/3,
-                getRight()-(getRight()-getLeft())/3,
-                getBottom()-(getBottom()-getTop())/3, mPaint);
+    public Drawer getDrawer() {
+        return new Drawer();
     }
 
-    public int getRectPoint(coordinate_sections bound) throws IllegalArgumentException{
-        //returns the coordinates of a given bound that we are looking for
-        switch(bound){
-            case LEFT_X:
-                return getLeft()+(getRight()-getLeft())/3;
-            case RIGHT_X:
-                return getRight()-(getRight()-getLeft())/3;
-            case UPPER_Y:
-                return getTop()+(getBottom()-getTop())/3;
-            case LOWER_Y:
-                return getBottom()-(getBottom()-getTop())/3;
+    public class Drawer {
+        public void beginDrawing() {
+            mCanvas = lockCanvas();
         }
-        throw new IllegalArgumentException("Unexpected enum");
-    }
 
-    public enum coordinate_sections {
-        LEFT_X, RIGHT_X, UPPER_Y, LOWER_Y
-    }
+        public Canvas getCanvas() {
+            if (mCanvas == null) {
+                throw new RuntimeException("Must call beginDrawing() before drawing.");
+            }
+            return mCanvas;
+        }
 
+        public void clearScreen() {
+            // The only argument that matters here in the call to drawColor is PorterDuff.Mode.CLEAR.
+            // In Porter-Duff compositing, clear mode discards the pixels of all images to be
+            // composited, leaving only a blank image behind.
+            getCanvas().drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        }
+
+        public void drawBox(float left, float top, float right, float bottom) {
+            getCanvas().drawRect(left, top, right, bottom, mPaint);
+        }
+
+        public void drawBox(Rect box) {
+            drawBox(box.left, box.top, box.right, box.bottom);
+        }
+
+        public void drawBox(RectF box) {
+            drawBox(box.left, box.top, box.right, box.bottom);
+        }
+
+        public void endDrawing() {
+            unlockCanvasAndPost(mCanvas);
+            mCanvas = null;
+        }
+
+        private Canvas mCanvas;
+    }
 }

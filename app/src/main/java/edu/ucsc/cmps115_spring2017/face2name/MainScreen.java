@@ -77,38 +77,9 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     }
     
     public boolean onTouchEvent(MotionEvent event) {
-
         //gets the coordinate of press event
         int touchX = (int) event.getX();
         int touchY = (int) event.getY();
-       // Log.d("PRESS", "GET_X: "+touchX+ " GET_Y: "+touchY);
-       // Log.d("PRESS", "EVENT ACTION: "+event.getAction());
-        if (isPressEvent(event.getActionMasked()))
-        {
-            //returns the coordinates of the red rectangle
-            int leftXCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.LEFT_X);
-            int rightXCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.RIGHT_X);
-            int upperYCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.UPPER_Y);
-            int lowerYCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.LOWER_Y);
-
-            //If the press was within the X bounds and within the Y bounds, continue
-            if ((touchX >= leftXCoordinate && touchX <= rightXCoordinate) &&
-                    (touchY >= upperYCoordinate && touchY <= lowerYCoordinate)) {
-
-               //build dialong
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-                // set title
-                alertDialogBuilder.setTitle("Rectangle Pressed");
-
-                // create alert dialog
-                AlertDialog alertDialog = alertDialogBuilder.create();
-
-                // show it
-                alertDialog.show();
-            }
-
-        }
 
         // If we tapped on the screen and if we didn't tap in the text box
         if(event.getAction() == MotionEvent.ACTION_DOWN && !getLocationOnScreen().contains(touchX,touchY)) {
