@@ -14,8 +14,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.TextureView;
 
-import java.util.IllegalFormatCodePointException;
-
 public final class LayerView extends TextureView
 {
     private Paint mPaint;
