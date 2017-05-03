@@ -2,7 +2,7 @@ package edu.ucsc.cmps115_spring2017.face2name.Camera;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import android.graphics.Rect;
+import android.graphics.RectF;
 import android.hardware.Camera;
 
 /**
@@ -37,7 +37,7 @@ public final class FaceDetectionCapability extends CameraCapability implements C
         final static int NORMALIZED_HEIGHT = 2000;
 
         Face(Camera.Face face) {
-            mRect = face.rect;
+            mRect = new RectF(face.rect);
         }
 
         /**
@@ -45,11 +45,11 @@ public final class FaceDetectionCapability extends CameraCapability implements C
          * ranging from the points (-1000, -1000) to (1000, 1000).
          * @return A face's bounding rectangle normalized to a reference coordinate system.
          */
-        public Rect getRect() {
+        public RectF getRect() {
             return mRect;
         }
 
-        final private Rect mRect;
+        final private RectF mRect;
     }
 
     /**
