@@ -32,8 +32,8 @@ public final class FaceDetectionCapability extends CameraCapability implements C
     }
 
     public class Face {
-        public Face(Rect rect) {
-            mRect = rect;
+        Face(Camera.Face face) {
+            mRect = face.rect;
         }
 
         Rect getRect() {
@@ -75,7 +75,7 @@ public final class FaceDetectionCapability extends CameraCapability implements C
         Face[] faceObjs = new Face[faces.length];
 
         for (int i = 0; i < faces.length; ++i) {
-            faceObjs[i] = new Face(faces[i].rect);
+            faceObjs[i] = new Face(faces[i]);
         }
         mListener.onFaceDetection(faceObjs);
     }
