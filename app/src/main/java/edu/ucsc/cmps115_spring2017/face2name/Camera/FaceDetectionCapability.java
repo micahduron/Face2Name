@@ -13,14 +13,14 @@ public final class FaceDetectionCapability extends CameraCapability implements C
         mListener = listener;
     }
 
-    void startFaceDetection() {
+    public void startFaceDetection() {
         if (mCameraInst == null) {
             throw new RuntimeException("Cannot call startFaceDetection in an uninitialized state.");
         }
         mCameraInst.getCamera().startFaceDetection();
     }
 
-    void stopFaceDetection() {
+    public void stopFaceDetection() {
         if (mCameraInst == null) {
             throw new RuntimeException("Cannot call stopFaceDetection in an uninitialized state.");
         }
@@ -36,7 +36,7 @@ public final class FaceDetectionCapability extends CameraCapability implements C
             mRect = face.rect;
         }
 
-        Rect getRect() {
+        public Rect getRect() {
             return mRect;
         }
 
