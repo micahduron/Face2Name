@@ -37,11 +37,6 @@ public class MainScreen
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_preview);
         mCameraPreview.setCapabilities(mOrientation, mFaceDetector);
 
-        mFaceTransform = FaceDetectionCapability.getFaceTransform(
-                mOrientation.getCameraAngle(),
-                mLayerView.getWidth(),
-                mLayerView.getHeight()
-        );
         mLayerView = (LayerView) findViewById(R.id.layer_view);
         mName = (EditText)findViewById(R.id.name_text);
     }
@@ -78,6 +73,11 @@ public class MainScreen
 
     @Override
     public void onPreviewReady() {
+        mFaceTransform = FaceDetectionCapability.getFaceTransform(
+                mOrientation.getCameraAngle(),
+                mLayerView.getWidth(),
+                mLayerView.getHeight()
+        );
         mCameraPreview.startPreview();
         mFaceDetector.startFaceDetection();
     }
