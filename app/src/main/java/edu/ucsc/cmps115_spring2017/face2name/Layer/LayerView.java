@@ -9,11 +9,11 @@ import android.util.AttributeSet;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.view.View;
+import android.view.TextureView;
 
 import java.util.IllegalFormatCodePointException;
 
-public final class LayerView extends View
+public final class LayerView extends TextureView
 {
     private Paint mPaint;
     private int mColor;
@@ -40,6 +40,8 @@ public final class LayerView extends View
         mPaint.setColor(mColor); // set mColor
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(10); // set stroke width
+
+        setOpaque(false);
     }
 
     @Override
