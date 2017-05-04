@@ -8,33 +8,19 @@ import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.SurfaceTexture;
 import android.util.AttributeSet;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.TextureView;
 
-public final class LayerView extends TextureView
+public final class LayerView extends TextureView implements TextureView.SurfaceTextureListener
 {
     private Paint mPaint;
     private int mColor;
 
-    public LayerView(Context context) {
-        super(context);
-        init();
-    }
-    public LayerView(Context context, AttributeSet set) {
-        super(context, set);
-        init();
-    }
-
-    public LayerView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
-
-    private void init(){
-
+    {
         //initialize draw variables.
         mColor =  Color.parseColor("#e60000");
         mPaint = new Paint();
@@ -43,10 +29,46 @@ public final class LayerView extends TextureView
         mPaint.setStrokeWidth(10); // set stroke width
 
         setOpaque(false);
+        setSurfaceTextureListener(this);
+    }
+
+    public LayerView(Context context) {
+        super(context);
+    }
+    public LayerView(Context context, AttributeSet set) {
+        super(context, set);
+    }
+
+    public LayerView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
     }
 
     public Drawer getDrawer() {
         return new Drawer();
+    }
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        Drawer drawer = getDrawer();
+
+        drawer.beginDrawing();
+        drawer.clearScreen();
+        drawer.endDrawing();
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        return true;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+
     }
 
     public class Drawer {
