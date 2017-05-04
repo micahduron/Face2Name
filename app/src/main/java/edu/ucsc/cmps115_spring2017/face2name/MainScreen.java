@@ -91,7 +91,7 @@ public class MainScreen
         RectF faceRect = new RectF();
 
         for (final Face face : faces) {
-            mFaceTransform.mapRect(face.getRect(), faceRect);
+            mFaceTransform.mapRect(faceRect, face.getRect());
 
             drawer.drawBox(faceRect);
         }
