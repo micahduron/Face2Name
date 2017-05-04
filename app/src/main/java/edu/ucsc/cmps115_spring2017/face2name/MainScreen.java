@@ -88,14 +88,12 @@ public class MainScreen
         drawer.beginDrawing();
         drawer.clearScreen();
 
-        if (faces.length > 0) {
-            RectF faceRect = new RectF();
+        RectF faceRect = new RectF();
 
-            for (final Face face : faces) {
-                mFaceTransform.mapRect(face.getRect(), faceRect);
+        for (final Face face : faces) {
+            mFaceTransform.mapRect(face.getRect(), faceRect);
 
-                drawer.drawBox(faceRect);
-            }
+            drawer.drawBox(faceRect);
         }
         drawer.endDrawing();
     }
