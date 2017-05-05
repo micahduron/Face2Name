@@ -186,9 +186,9 @@ public final class CameraPreview
 
     @Override
     public void onCameraRelease() {
-        releaseCapabilities();
-
         mCallbacks.onCameraRelease();
+
+        releaseCapabilities();
 
         mReadyCallbackExecuted = false;
     }
