@@ -74,7 +74,7 @@ public final class CameraPreview
         if (mCapabilities == null) return;
 
         for (final CameraCapability cap : mCapabilities) {
-            cap.onRelease(getCamera());
+            cap.onRelease(mCameraInst);
         }
     }
 
@@ -157,12 +157,12 @@ public final class CameraPreview
     public void onSurfaceTextureUpdated(SurfaceTexture texture) {
         if (mCapabilities != null) {
             for (final CameraCapability cap : mCapabilities) {
-                Bitmap bitmap = cap.onPreFrame(getCamera());
+                Bitmap bitmap = cap.onPreFrame(mCameraInst);
 
                 if (bitmap != null) {
                     getBitmap(bitmap);
                 }
-                cap.onFrame(bitmap, getCamera());
+                cap.onFrame(bitmap, mCameraInst);
             }
         }
     }
@@ -205,7 +205,7 @@ public final class CameraPreview
         if (mCapabilities == null) return;
 
         for (final CameraCapability cap : mCapabilities) {
-            cap.onAttach(getCamera());
+            cap.onAttach(mCameraInst);
         }
     }
 
