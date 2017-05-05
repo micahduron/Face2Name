@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
+import edu.ucsc.cmps115_spring2017.face2name.AppStateMachine.AppState;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.FaceDetectionCapability;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.FaceDetectionCapability.Face;
@@ -19,7 +20,8 @@ import edu.ucsc.cmps115_spring2017.face2name.Layer.LayerView;
 public class MainScreen
        extends AppCompatActivity
        implements CameraPreview.PreviewCallbacks,
-                  FaceDetectionCapability.FaceDetectionListener
+                  FaceDetectionCapability.FaceDetectionListener,
+                  AppStateMachine.Callbacks
 {
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -96,6 +98,11 @@ public class MainScreen
             drawer.drawBox(faceRect);
         }
         drawer.endDrawing();
+    }
+
+    @Override
+    public void onAppStateChange(AppState oldState, AppState newState) {
+
     }
 
     /*
