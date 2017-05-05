@@ -68,7 +68,7 @@ public class MainScreen
 
     @Override
     public void onCameraError(Exception ex) {
-
+        ex.printStackTrace();
     }
 
     @Override
