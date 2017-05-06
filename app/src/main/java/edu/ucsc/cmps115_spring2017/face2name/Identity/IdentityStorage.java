@@ -259,7 +259,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         final static String InsertIdentity = "INSERT OR REPLACE (key, name) INTO " + DBInfo.TABLE_NAME + " VALUES" +
                                                 "(?1," +
                                                 "COALESCE((SELECT name FROM " + DBInfo.TABLE_NAME + "WHERE key=?1), ?2))";
-        final static String GetIdentity = "SELECT name FROM " + DBInfo.TABLE_NAME + " WHERE key=?";
+        final static String GetIdentity = "SELECT * FROM " + DBInfo.TABLE_NAME + " WHERE key=?";
         final static String RemoveIdentity = "DELETE FROM " + DBInfo.TABLE_NAME + " WHERE key=?";
         final static String ClearIdentities = "DELETE FROM " + DBInfo.TABLE_NAME;
     }
