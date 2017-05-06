@@ -8,6 +8,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.provider.BaseColumns;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by micah on 4/29/17.
  */
@@ -60,6 +63,37 @@ public final class IdentityStorage extends SQLiteOpenHelper {
                 storeIdentity(identity);
 
                 return null;
+            }
+        };
+        query.execute();
+    }
+
+    public List<Identity> dumpIdentities() {
+        SQLiteDatabase db = getReadableDatabase();
+
+        Cursor queryResult = db.rawQuery(Queries.DumpIdentities, null);
+
+        int rowCount = queryResult.getCount();
+        List<Identity> ret = new ArrayList<>(rowCount);
+
+        if (rowCount > 0) {
+            do {
+                String key = queryResult.getString(0);
+                String name = !queryResult.isNull(1) ? queryResult.getString(1) : null;
+
+                ret.add(new Identity(key, name));
+            } while (queryResult.moveToNext());
+        }
+        queryResult.close();
+
+        return ret;
+    }
+
+    public void dumpIdentities(final AsyncQueryCallbacks<List<Identity>> callbacks) {
+        AsyncQuery<List<Identity>> query = new AsyncQuery<List<Identity>>(callbacks) {
+            @Override
+            protected List<Identity> onExecute() {
+                return dumpIdentities();
             }
         };
         query.execute();
