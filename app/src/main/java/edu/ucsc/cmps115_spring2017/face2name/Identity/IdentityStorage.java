@@ -78,8 +78,8 @@ public final class IdentityStorage extends SQLiteOpenHelper {
 
         if (rowCount > 0) {
             do {
-                long key = queryResult.getLong(0);
-                String name = !queryResult.isNull(1) ? queryResult.getString(1) : null;
+                long key = getKey(queryResult);
+                String name = getName(queryResult);
 
                 ret.add(new Identity(key, name));
             } while (queryResult.moveToNext());
@@ -109,7 +109,8 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         Identity result = null;
 
         if (queryResult.getCount() > 0) {
-            String name = !queryResult.isNull(1) ? queryResult.getString(1) : null;
+            String name = getName(queryResult);
+
             result = new Identity(identity.key, name);
         }
         queryResult.close();
@@ -164,6 +165,20 @@ public final class IdentityStorage extends SQLiteOpenHelper {
             }
         };
         query.execute();
+    }
+
+    private long getKey(Cursor queryResult) {
+        if (mKeyIndex == -1) {
+            mKeyIndex = queryResult.getColumnIndex("key");
+        }
+        return queryResult.getLong(mKeyIndex);
+    }
+
+    private String getName(Cursor queryResult) {
+        if (mNameIndex == -1) {
+            mNameIndex = queryResult.getColumnIndex("name");
+        }
+        return !queryResult.isNull(mNameIndex) ? queryResult.getString(mNameIndex) : null;
     }
 
     private class AsyncQueryResult<T> {
@@ -257,4 +272,10 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         final static String RemoveIdentity = "DELETE FROM " + DBInfo.TABLE_NAME + " WHERE key=?";
         final static String ClearIdentities = "DELETE FROM " + DBInfo.TABLE_NAME;
     }
+
+    // Column index for an identity's key field.
+    private int mKeyIndex = -1;
+
+    // Column index for an identity's name field.
+    private int mNameIndex = -1;
 }
