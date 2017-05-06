@@ -169,7 +169,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
 
     private long getKey(Cursor queryResult) {
         if (mKeyIndex == -1) {
-            mKeyIndex = queryResult.getColumnIndex("key");
+            mKeyIndex = queryResult.getColumnIndex(DBInfo._ID);
         }
         return queryResult.getLong(mKeyIndex);
     }
@@ -262,14 +262,14 @@ public final class IdentityStorage extends SQLiteOpenHelper {
 
     private static class Queries {
         final static String CreateTable = "CREATE TABLE IF NOT EXISTS " + DBInfo.TABLE_NAME +
-                                            "(key INTEGER PRIMARY KEY NOT NULL," +
+                                            "(" + DBInfo._ID + " INTEGER PRIMARY KEY NOT NULL," +
                                             "name TEXT)";
         final static String DumpIdentities = "SELECT * FROM " + DBInfo.TABLE_NAME;
-        final static String InsertIdentity = "INSERT OR REPLACE (key, name) INTO " + DBInfo.TABLE_NAME + " VALUES" +
+        final static String InsertIdentity = "INSERT OR REPLACE (" + DBInfo._ID + ", name) INTO " + DBInfo.TABLE_NAME + " VALUES" +
                                                 "(?1," +
-                                                "COALESCE((SELECT name FROM " + DBInfo.TABLE_NAME + "WHERE key=?1), ?2))";
-        final static String GetIdentity = "SELECT * FROM " + DBInfo.TABLE_NAME + " WHERE key=?";
-        final static String RemoveIdentity = "DELETE FROM " + DBInfo.TABLE_NAME + " WHERE key=?";
+                                                "COALESCE((SELECT name FROM " + DBInfo.TABLE_NAME + "WHERE " + DBInfo._ID + "=?1), ?2))";
+        final static String GetIdentity = "SELECT * FROM " + DBInfo.TABLE_NAME + " WHERE " + DBInfo._ID + "=?";
+        final static String RemoveIdentity = "DELETE FROM " + DBInfo.TABLE_NAME + " WHERE " + DBInfo._ID + "=?";
         final static String ClearIdentities = "DELETE FROM " + DBInfo.TABLE_NAME;
     }
 
