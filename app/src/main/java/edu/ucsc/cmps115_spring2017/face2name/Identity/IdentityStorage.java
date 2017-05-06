@@ -43,17 +43,21 @@ public final class IdentityStorage extends SQLiteOpenHelper {
 
     }
 
+    public void storeIdentity(Identity identity) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        String[] queryParams = new String[] {
+                identity.key,
+                identity.name
+        };
+        db.rawQuery(Queries.InsertIdentity, queryParams);
+    }
+
     public void storeIdentity(final Identity identity, final AsyncQueryCallbacks<Void> callbacks) {
         AsyncQuery<Void> query = new AsyncQuery<Void>(callbacks) {
             @Override
             protected Void onExecute() {
-                SQLiteDatabase db = getWritableDatabase();
-
-                String[] queryParams = new String[] {
-                        identity.key,
-                        identity.name
-                };
-                db.rawQuery(Queries.InsertIdentity, queryParams);
+                storeIdentity(identity);
 
                 return null;
             }
@@ -61,28 +65,32 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
+    public Identity getIdentity(Identity identity) {
+        if (identity.key == null) {
+            throw new RuntimeException("Identity's key field must not be null.");
+        }
+        SQLiteDatabase db = getReadableDatabase();
+        String[] queryParams = new String[] {
+                identity.key
+        };
+        Cursor queryResult = db.rawQuery(Queries.GetIdentity, queryParams);
+
+        Identity result = null;
+
+        if (queryResult.getCount() > 0) {
+            String name = !queryResult.isNull(1) ? queryResult.getString(1) : null;
+            result = new Identity(identity.key, name);
+        }
+        queryResult.close();
+
+        return result;
+    }
+
     public void getIdentity(final Identity identity, final AsyncQueryCallbacks<Identity> callbacks) {
         AsyncQuery<Identity> query = new AsyncQuery<Identity>(callbacks) {
             @Override
             protected Identity onExecute() {
-                if (identity.key == null) {
-                    throw new RuntimeException("Identity's key field must not be null.");
-                }
-                SQLiteDatabase db = getReadableDatabase();
-                String[] queryParams = new String[] {
-                        identity.key
-                };
-                Cursor queryResult = db.rawQuery(Queries.GetIdentity, queryParams);
-
-                Identity result = null;
-
-                if (queryResult.getCount() > 0) {
-                    String name = !queryResult.isNull(1) ? queryResult.getString(1) : null;
-                    result = new Identity(identity.key, name);
-                }
-                queryResult.close();
-
-                return result;
+                return getIdentity(identity);
             }
         };
         query.execute();
