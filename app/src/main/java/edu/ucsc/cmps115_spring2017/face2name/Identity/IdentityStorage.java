@@ -50,7 +50,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
 
         String[] queryParams = new String[] {
-                identity.key,
+                Long.toString(identity.key),
                 identity.name
         };
         db.rawQuery(Queries.InsertIdentity, queryParams);
@@ -78,7 +78,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
 
         if (rowCount > 0) {
             do {
-                String key = queryResult.getString(0);
+                long key = queryResult.getLong(0);
                 String name = !queryResult.isNull(1) ? queryResult.getString(1) : null;
 
                 ret.add(new Identity(key, name));
@@ -100,12 +100,9 @@ public final class IdentityStorage extends SQLiteOpenHelper {
     }
 
     public Identity getIdentity(Identity identity) {
-        if (identity.key == null) {
-            throw new RuntimeException("Identity's key field must not be null.");
-        }
         SQLiteDatabase db = getReadableDatabase();
         String[] queryParams = new String[] {
-                identity.key
+                Long.toString(identity.key)
         };
         Cursor queryResult = db.rawQuery(Queries.GetIdentity, queryParams);
 
@@ -131,13 +128,10 @@ public final class IdentityStorage extends SQLiteOpenHelper {
     }
 
     public void removeIdentity(Identity identity) {
-        if (identity.key == null) {
-            throw new RuntimeException("Identity's key field must not be null.");
-        }
         SQLiteDatabase db = getWritableDatabase();
 
         String[] queryParams = new String[] {
-                identity.key
+                Long.toString(identity.key)
         };
         db.rawQuery(Queries.RemoveIdentity, queryParams);
     }
@@ -253,7 +247,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
 
     private static class Queries {
         final static String CreateTable = "CREATE TABLE IF NOT EXISTS " + DBInfo.TABLE_NAME +
-                                            "(key TEXT PRIMARY KEY NOT NULL," +
+                                            "(key INTEGER PRIMARY KEY NOT NULL," +
                                             "name TEXT)";
         final static String DumpIdentities = "SELECT * FROM " + DBInfo.TABLE_NAME;
         final static String InsertIdentity = "INSERT OR REPLACE (key, name) INTO " + DBInfo.TABLE_NAME + " VALUES" +

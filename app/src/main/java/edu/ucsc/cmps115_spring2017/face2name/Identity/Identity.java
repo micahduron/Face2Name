@@ -5,10 +5,10 @@ package edu.ucsc.cmps115_spring2017.face2name.Identity;
  */
 
 public final class Identity {
-    public String key;
+    public long key;
     public String name;
 
-    public Identity(String keyVal, String nameVal) {
+    public Identity(long keyVal, String nameVal) {
         key = keyVal;
         name = nameVal;
     }
