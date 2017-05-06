@@ -169,7 +169,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
 
     private static class Queries {
         final static String CreateTable = "CREATE TABLE IF NOT EXISTS " + DBInfo.TABLE_NAME +
-                                            "(key PRIMARY KEY NOT NULL, name)";
+                                            "(key TEXT PRIMARY KEY NOT NULL, name TEXT)";
         final static String DumpIdentities = "SELECT * FROM " + DBInfo.TABLE_NAME;
         final static String InsertIdentity = "INSERT OR REPLACE (key, name) INTO " + DBInfo.TABLE_NAME +
                                                 "";
