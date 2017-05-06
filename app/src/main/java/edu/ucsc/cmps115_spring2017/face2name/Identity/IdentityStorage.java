@@ -13,7 +13,7 @@ import android.provider.BaseColumns;
  */
 
 public final class IdentityStorage extends SQLiteOpenHelper {
-    public abstract class QueryCallbacks<T> {
+    public abstract class AsyncQueryCallbacks<T> {
         protected void onSuccess(T result) {}
 
         protected void onError(Exception ex) {
@@ -43,7 +43,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
 
     }
 
-    public void storeIdentity(final Identity identity, final QueryCallbacks<Void> callbacks) {
+    public void storeIdentity(final Identity identity, final AsyncQueryCallbacks<Void> callbacks) {
         AsyncQuery<Void> query = new AsyncQuery<Void>(callbacks) {
             @Override
             protected Void onExecute() {
@@ -61,7 +61,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
-    public void getIdentity(final Identity identity, final QueryCallbacks<Identity> callbacks) {
+    public void getIdentity(final Identity identity, final AsyncQueryCallbacks<Identity> callbacks) {
         AsyncQuery<Identity> query = new AsyncQuery<Identity>(callbacks) {
             @Override
             protected Identity onExecute() {
@@ -97,7 +97,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         AsyncQuery() {
             super();
         }
-        AsyncQuery(QueryCallbacks<T> callbacks) {
+        AsyncQuery(AsyncQueryCallbacks<T> callbacks) {
             super();
 
             if (callbacks != null) {
@@ -155,7 +155,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
             }
         }
 
-        private QueryCallbacks<T> mCallbacks = new QueryCallbacks<T>() {
+        private AsyncQueryCallbacks<T> mCallbacks = new AsyncQueryCallbacks<T>() {
             @Override
             protected void onSuccess(T result) {}
         };
