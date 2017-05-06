@@ -130,6 +130,30 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
+    public void removeIdentity(Identity identity) {
+        if (identity.key == null) {
+            throw new RuntimeException("Identity's key field must not be null.");
+        }
+        SQLiteDatabase db = getWritableDatabase();
+
+        String[] queryParams = new String[] {
+                identity.key
+        };
+        db.rawQuery(Queries.RemoveIdentity, queryParams);
+    }
+
+    public void removeIdentity(final Identity identity, final AsyncQueryCallbacks<Void> callbacks) {
+        AsyncQuery<Void> query = new AsyncQuery<Void>(callbacks) {
+            @Override
+            protected Void onExecute() {
+                removeIdentity(identity);
+
+                return null;
+            }
+        };
+        query.execute();
+    }
+
     private class AsyncQueryResult<T> {
         public T value;
         public Exception err;
@@ -218,5 +242,6 @@ public final class IdentityStorage extends SQLiteOpenHelper {
                                                 "(?1," +
                                                 "COALESCE((SELECT name FROM " + DBInfo.TABLE_NAME + "WHERE key=?1), ?2))";
         final static String GetIdentity = "SELECT name FROM " + DBInfo.TABLE_NAME + " WHERE key=?";
+        final static String RemoveIdentity = "DELETE FROM " + DBInfo.TABLE_NAME + " WHERE key=?";
     }
 }
