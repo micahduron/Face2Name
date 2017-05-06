@@ -154,6 +154,24 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
+    public void clearIdentities() {
+        SQLiteDatabase db = getWritableDatabase();
+
+        db.execSQL(Queries.ClearIdentities);
+    }
+
+    public void clearIdentities(final AsyncQueryCallbacks<Void> callbacks) {
+        AsyncQuery<Void> query = new AsyncQuery<Void>(callbacks) {
+            @Override
+            protected Void onExecute() {
+                clearIdentities();
+
+                return null;
+            }
+        };
+        query.execute();
+    }
+
     private class AsyncQueryResult<T> {
         public T value;
         public Exception err;
@@ -243,5 +261,6 @@ public final class IdentityStorage extends SQLiteOpenHelper {
                                                 "COALESCE((SELECT name FROM " + DBInfo.TABLE_NAME + "WHERE key=?1), ?2))";
         final static String GetIdentity = "SELECT name FROM " + DBInfo.TABLE_NAME + " WHERE key=?";
         final static String RemoveIdentity = "DELETE FROM " + DBInfo.TABLE_NAME + " WHERE key=?";
+        final static String ClearIdentities = "DELETE FROM " + DBInfo.TABLE_NAME;
     }
 }
