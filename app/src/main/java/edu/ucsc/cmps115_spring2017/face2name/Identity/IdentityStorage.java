@@ -13,6 +13,14 @@ import android.provider.BaseColumns;
  */
 
 public final class IdentityStorage extends SQLiteOpenHelper {
+    public abstract class QueryCallbacks<T> {
+        protected void onSuccess(T result) {}
+
+        protected void onError(Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public IdentityStorage(Context context) {
         this(context, DBInfo.DB_NAME, null, DBInfo.VERSION);
     }
@@ -78,14 +86,6 @@ public final class IdentityStorage extends SQLiteOpenHelper {
             }
         };
         query.execute();
-    }
-
-    public abstract class QueryCallbacks<T> {
-        protected void onSuccess(T result) {}
-
-        protected void onError(Exception ex) {
-            ex.printStackTrace();
-        }
     }
 
     private class AsyncQueryResult<T> {
