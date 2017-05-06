@@ -163,8 +163,8 @@ public final class IdentityStorage extends SQLiteOpenHelper {
 
     private static class DBInfo implements BaseColumns {
         final static int VERSION = 1;
-        final static String DB_NAME = "/dev/null";
-        final static String TABLE_NAME = "f2n_identities";
+        final static String DB_NAME = "Face2Name";
+        final static String TABLE_NAME = "identities";
     }
 
     private static class Queries {
