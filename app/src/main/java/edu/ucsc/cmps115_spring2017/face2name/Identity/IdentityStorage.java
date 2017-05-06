@@ -69,7 +69,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
                 Identity result = null;
 
                 if (queryResult.getCount() > 0) {
-                    String name = queryResult.getString(1);
+                    String name = !queryResult.isNull(1) ? queryResult.getString(1) : null;
                     result = new Identity(identity.key, name);
                 }
                 queryResult.close();
