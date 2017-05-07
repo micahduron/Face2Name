@@ -8,7 +8,7 @@ import android.os.AsyncTask;
  */
 
 final class CameraInstance {
-    public enum InitState {
+    enum InitState {
         UNINITIALIZED,
         RUNNING,
         FINISHED
@@ -19,13 +19,13 @@ final class CameraInstance {
         mCameraId = -1;
     }
 
-    public CameraInstance() {}
+    CameraInstance() {}
 
-    public CameraInstance(int cameraId, Callbacks callbacks) {
+    CameraInstance(int cameraId, Callbacks callbacks) {
         open(cameraId, callbacks);
     }
 
-    public void open(int cameraId, Callbacks callbacks) {
+    void open(int cameraId, Callbacks callbacks) {
         if (getInitState() != InitState.UNINITIALIZED) {
             throw new RuntimeException("Cannot call open while object is initialized.");
         }
@@ -38,37 +38,37 @@ final class CameraInstance {
         (new CameraStarter()).execute(cameraId);
     }
 
-    public InitState getInitState() {
+    InitState getInitState() {
         return mInitState;
     }
 
-    public boolean isInitializing() {
+    boolean isInitializing() {
         return getInitState() == InitState.RUNNING;
     }
 
-    public boolean isInitialized() {
+    boolean isInitialized() {
         return getInitState() == InitState.FINISHED;
     }
 
-    public Camera getCamera() {
+    Camera getCamera() {
         return mCamera;
     }
 
-    public int getCameraId() {
+    int getCameraId() {
         return mCameraId;
     }
 
-    public Camera.CameraInfo getCameraInfo() {
+    Camera.CameraInfo getCameraInfo() {
         return getCameraInfo(new Camera.CameraInfo());
     }
 
-    public Camera.CameraInfo getCameraInfo(Camera.CameraInfo info) {
+    Camera.CameraInfo getCameraInfo(Camera.CameraInfo info) {
         Camera.getCameraInfo(getCameraId(), info);
 
         return info;
     }
 
-    public void release() {
+    void release() {
         InitState initState = getInitState();
 
         if (initState == InitState.FINISHED) {
@@ -87,7 +87,7 @@ final class CameraInstance {
         mCameraId = -1;
     }
 
-    public interface Callbacks {
+    interface Callbacks {
         void onCameraStart();
         void onCameraRelease();
         void onCameraError(Exception ex);
