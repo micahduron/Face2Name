@@ -74,7 +74,7 @@ public final class FaceDetectionCapability extends CameraCapability implements C
     }
 
     @Override
-    public void onAttach(CameraInstance cameraInst) {
+    protected void onAttach(CameraInstance cameraInst) {
         mCameraInst = cameraInst;
         Camera.Parameters cameraParams = mCameraInst.getCamera().getParameters();
 
@@ -85,17 +85,17 @@ public final class FaceDetectionCapability extends CameraCapability implements C
     }
 
     @Override
-    public Bitmap onPreFrame(CameraInstance cameraInst) {
+    protected Bitmap onPreFrame(CameraInstance cameraInst) {
         return null;
     }
 
     @Override
-    public void onFrame(Bitmap bitmap, CameraInstance cameraInst) {
+    protected void onFrame(Bitmap bitmap, CameraInstance cameraInst) {
 
     }
 
     @Override
-    public void onRelease(CameraInstance cameraInst) {
+    protected void onRelease(CameraInstance cameraInst) {
         mCameraInst.getCamera().stopFaceDetection();
         mCameraInst = null;
     }

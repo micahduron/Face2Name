@@ -12,19 +12,19 @@ public class AppStateMachine {
         ERROR
     }
 
-    public interface Callbacks {
+    interface Callbacks {
         void onAppStateChange(AppState oldState, AppState newState);
     }
 
-    public AppStateMachine() {
+    AppStateMachine() {
         this(AppState.INIT, null);
     }
 
-    public AppStateMachine(AppState initState) {
+    AppStateMachine(AppState initState) {
         this(initState, null);
     }
 
-    public AppStateMachine(AppState initState, Callbacks callbacks) {
+    AppStateMachine(AppState initState, Callbacks callbacks) {
         mState = initState;
         mCallbacks = callbacks;
     }
