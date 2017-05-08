@@ -1,21 +1,28 @@
 package edu.ucsc.cmps115_spring2017.face2name;
 
-import android.content.Context;
+import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.view.MotionEvent;
-import android.app.AlertDialog;
-import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 
+import edu.ucsc.cmps115_spring2017.face2name.AppStateMachine.AppState;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
+import edu.ucsc.cmps115_spring2017.face2name.Camera.FaceDetectionCapability;
+import edu.ucsc.cmps115_spring2017.face2name.Camera.FaceDetectionCapability.Face;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability;
 import edu.ucsc.cmps115_spring2017.face2name.Layer.LayerView;
 
-public class MainScreen extends AppCompatActivity implements CameraPreview.PreviewCallbacks {
-    Context ctx = this;
-    DatabaseOperations db = new DatabaseOperations(ctx);
-
+public class MainScreen
+       extends AppCompatActivity
+       implements CameraPreview.PreviewCallbacks,
+                  FaceDetectionCapability.FaceDetectionListener,
+                  AppStateMachine.Callbacks
+{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,9 +33,14 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
     public void onStart() {
         super.onStart();
 
+        mOrientation = new OrientationCapability(getWindowManager().getDefaultDisplay());
+        mFaceDetector = new FaceDetectionCapability(this);
+        
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_preview);
-        mCameraPreview.setCapabilities(new OrientationCapability(getWindowManager().getDefaultDisplay()));
+        mCameraPreview.setCapabilities(mOrientation, mFaceDetector);
+
         mLayerView = (LayerView) findViewById(R.id.layer_view);
+        mName = (EditText)findViewById(R.id.name_text);
     }
 
     @Override
@@ -52,19 +64,46 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
 
     @Override
     public void onCameraRelease() {
-
+        mCameraPreview.stopPreview();
+        mFaceDetector.stopFaceDetection();
     }
 
     @Override
     public void onCameraError(Exception ex) {
-
+        ex.printStackTrace();
     }
 
     @Override
     public void onPreviewReady() {
+        mFaceTransform = FaceDetectionCapability.getFaceTransform(
+                mOrientation.getCameraAngle(),
+                mLayerView.getWidth(),
+                mLayerView.getHeight()
+        );
         mCameraPreview.startPreview();
+        mFaceDetector.startFaceDetection();
     }
 
+    @Override
+    public void onFaceDetection(Face[] faces) {
+        LayerView.Drawer drawer = mLayerView.getDrawer();
+        drawer.beginDrawing();
+        drawer.clearScreen();
+
+        RectF faceRect = new RectF();
+
+        for (final Face face : faces) {
+            mFaceTransform.mapRect(faceRect, face.getRect());
+
+            drawer.drawBox(faceRect);
+        }
+        drawer.endDrawing();
+    }
+
+    @Override
+    public void onAppStateChange(AppState oldState, AppState newState) {
+
+    }
 
     /*
     This helper function checks the input event against a few other events that might occur
@@ -74,48 +113,53 @@ public class MainScreen extends AppCompatActivity implements CameraPreview.Previ
         return (inputEvent == MotionEvent.ACTION_DOWN ||
                 inputEvent == MotionEvent.ACTION_UP);
     }
-
+    
     public boolean onTouchEvent(MotionEvent event) {
-
         //gets the coordinate of press event
         int touchX = (int) event.getX();
         int touchY = (int) event.getY();
-       // Log.d("PRESS", "GET_X: "+touchX+ " GET_Y: "+touchY);
-       // Log.d("PRESS", "EVENT ACTION: "+event.getAction());
-        if (isPressEvent(event.getActionMasked()))
-        {
-            //returns the coordinates of the red rectangle
-            int leftXCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.LEFT_X);
-            int rightXCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.RIGHT_X);
-            int upperYCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.UPPER_Y);
-            int lowerYCoordinate = mLayerView.getRectPoint(LayerView.coordinate_sections.LOWER_Y);
 
-            //If the press was within the X bounds and within the Y bounds, continue
-            if ((touchX >= leftXCoordinate && touchX <= rightXCoordinate) &&
-                    (touchY >= upperYCoordinate && touchY <= lowerYCoordinate)) {
+        // If we tapped on the screen and if we didn't tap in the text box
+        if(event.getAction() == MotionEvent.ACTION_DOWN && !getLocationOnScreen().contains(touchX,touchY)) {
 
-               //build dialong
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-                // set title
-                alertDialogBuilder.setTitle("Rectangle Pressed");
-
-                // create alert dialog
-                AlertDialog alertDialog = alertDialogBuilder.create();
-
-                // show it
-                alertDialog.show();
+            // If the textbox is hidden, bring up the textbox and the keyboard
+            if(mName.getVisibility() == View.INVISIBLE) {
+                mName.setVisibility(View.VISIBLE);
+                mName.requestFocus();
+                InputMethodManager input = (InputMethodManager) getSystemService(MainScreen.INPUT_METHOD_SERVICE);
+                input.showSoftInput(mName, InputMethodManager.SHOW_IMPLICIT);
             }
 
+            // Otherwise, hide the textbox and close the keyboard
+            else {
+                InputMethodManager input = (InputMethodManager) getSystemService(MainScreen.INPUT_METHOD_SERVICE);
+                input.hideSoftInputFromWindow(mName.getWindowToken(), 0);
+                mName.setVisibility(View.INVISIBLE);
+                mName.clearFocus();
+            }
         }
         return true;
     }
 
-    private CameraPreview mCameraPreview;
+    // Makes a rectangle so we can check if we tapped inside of our textbox
+    private Rect getLocationOnScreen( ) {
+        Rect tempRect = new Rect();
+        int[] location = new int[2];
 
-    public void insert (View v) {
-        db.insertInfo(db);
+        mName.getLocationOnScreen(location);
+
+        tempRect.left = location[0];
+        tempRect.top = location[1];
+        tempRect.right = location[0] + mName.getWidth();
+        tempRect.bottom = location[1] + mName.getHeight();
+
+        return tempRect;
     }
+
+    private EditText mName;
+    private CameraPreview mCameraPreview;
+    private OrientationCapability mOrientation;
+    private FaceDetectionCapability mFaceDetector;
+    private Matrix mFaceTransform;
     private LayerView mLayerView;
 }
-

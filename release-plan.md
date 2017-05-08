@@ -20,13 +20,13 @@ Persistent database
 
 * (3) As a user, I want to select objects on the screen and have the app respond accordingly.
 
-* (1) As a user, I want there to be persistent data storage so that I can close the app and open it back up without losing data.
-
 *Sprint 2*
 
 * (5) As a user, I want the app to be able to track faces on the screen.
 
 * (0) As a user, I want the app to be able to support multiple faces on the screen at the same time.
+
+* (1) As a user, I want there to be persistent data storage so that I can close the app and open it back up without losing data.
 
 *Sprint 3*
 
