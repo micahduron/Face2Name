@@ -4,9 +4,13 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.os.Debug;
+import android.support.v4.app.AppOpsManagerCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
@@ -18,15 +22,19 @@ import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability;
 import edu.ucsc.cmps115_spring2017.face2name.Layer.LayerView;
 
 public class MainScreen
-       extends AppCompatActivity
-       implements CameraPreview.PreviewCallbacks,
-                  FaceDetectionCapability.FaceDetectionListener,
-                  AppStateMachine.Callbacks
+        extends AppCompatActivity
+        implements CameraPreview.PreviewCallbacks,
+        FaceDetectionCapability.FaceDetectionListener,
+        AppStateMachine.Callbacks
 {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         setContentView(R.layout.activity_main_screen);
+
     }
 
     @Override
@@ -35,12 +43,13 @@ public class MainScreen
 
         mOrientation = new OrientationCapability(getWindowManager().getDefaultDisplay());
         mFaceDetector = new FaceDetectionCapability(this);
-        
+
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_preview);
         mCameraPreview.setCapabilities(mOrientation, mFaceDetector);
 
         mLayerView = (LayerView) findViewById(R.id.layer_view);
         mName = (EditText)findViewById(R.id.name_text);
+        mStateMachine = new AppStateMachine(AppState.IDLE);
     }
 
     @Override
@@ -92,12 +101,46 @@ public class MainScreen
 
         RectF faceRect = new RectF();
 
+        boolean drewInSelected = false;
         for (final Face face : faces) {
+
             mFaceTransform.mapRect(faceRect, face.getRect());
 
-            drawer.drawBox(faceRect);
+            if(mStateMachine.getState() == AppState.SELECTED) {
+
+                if (faceRect.contains(mTouchX, mTouchY)) {
+
+                    drawer.drawBox(faceRect);
+
+                    if (mName.getVisibility() == View.INVISIBLE) {
+
+                        mName.setVisibility(View.VISIBLE);
+                        mName.requestFocus();
+                        InputMethodManager input = (InputMethodManager) getSystemService(MainScreen.INPUT_METHOD_SERVICE);
+                        input.showSoftInput(mName, InputMethodManager.SHOW_IMPLICIT);
+                        mCameraPreview.stopPreview();
+                    }
+                    drewInSelected = true;
+                }
+            }
+
+            if(mStateMachine.getState() == AppState.IDLE){
+
+                if(mName.getVisibility() == View.VISIBLE) {
+                    InputMethodManager input = (InputMethodManager) getSystemService(MainScreen.INPUT_METHOD_SERVICE);
+                    input.hideSoftInputFromWindow(mName.getWindowToken(), 0);
+                    mName.setVisibility(View.INVISIBLE);
+                    mName.clearFocus();
+                }
+                drawer.drawBox(faceRect);
+            }
         }
         drawer.endDrawing();
+
+        // If we didn't draw anything when we tapped, go back to idle
+        // Because this isn't solved during the loop, this causes a frame stutter whenever we tap
+        if(!drewInSelected)
+            mStateMachine.setState(AppState.IDLE);
     }
 
     @Override
@@ -113,31 +156,25 @@ public class MainScreen
         return (inputEvent == MotionEvent.ACTION_DOWN ||
                 inputEvent == MotionEvent.ACTION_UP);
     }
-    
+
     public boolean onTouchEvent(MotionEvent event) {
         //gets the coordinate of press event
-        int touchX = (int) event.getX();
-        int touchY = (int) event.getY();
 
-        // If we tapped on the screen and if we didn't tap in the text box
-        if(event.getAction() == MotionEvent.ACTION_DOWN && !getLocationOnScreen().contains(touchX,touchY)) {
 
-            // If the textbox is hidden, bring up the textbox and the keyboard
-            if(mName.getVisibility() == View.INVISIBLE) {
-                mName.setVisibility(View.VISIBLE);
-                mName.requestFocus();
-                InputMethodManager input = (InputMethodManager) getSystemService(MainScreen.INPUT_METHOD_SERVICE);
-                input.showSoftInput(mName, InputMethodManager.SHOW_IMPLICIT);
+        if(event.getAction() == MotionEvent.ACTION_DOWN) {
+            if ( mStateMachine.getState() == AppState.IDLE) {
+                mStateMachine.setState(AppState.SELECTED);
+                mTouchX = (int) event.getX();
+                mTouchY = (int) event.getY();
             }
 
-            // Otherwise, hide the textbox and close the keyboard
-            else {
-                InputMethodManager input = (InputMethodManager) getSystemService(MainScreen.INPUT_METHOD_SERVICE);
-                input.hideSoftInputFromWindow(mName.getWindowToken(), 0);
-                mName.setVisibility(View.INVISIBLE);
-                mName.clearFocus();
+            else if (mStateMachine.getState() == AppState.SELECTED && !getLocationOnScreen().contains(mTouchX, mTouchY)) {
+                mStateMachine.setState(AppState.IDLE);
+                mCameraPreview.startPreview();
             }
+
         }
+
         return true;
     }
 
@@ -156,10 +193,12 @@ public class MainScreen
         return tempRect;
     }
 
+    private AppStateMachine mStateMachine;
     private EditText mName;
     private CameraPreview mCameraPreview;
     private OrientationCapability mOrientation;
     private FaceDetectionCapability mFaceDetector;
     private Matrix mFaceTransform;
     private LayerView mLayerView;
+    private int mTouchX, mTouchY;
 }
