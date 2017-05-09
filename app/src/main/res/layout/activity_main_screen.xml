@@ -25,7 +25,7 @@
             android:id="@+id/name_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|bottom"
+            android:layout_gravity="center_horizontal|top"
             android:background="#DD808080"
             android:padding="12dip"
             android:hint="Enter name here"
