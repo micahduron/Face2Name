@@ -12,6 +12,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import edu.ucsc.cmps115_spring2017.face2name.AppStateMachine.AppState;
+import edu.ucsc.cmps115_spring2017.face2name.Camera.AutoFocusCapability;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.FaceDetectionCapability;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.FaceDetectionCapability.Face;
@@ -43,9 +44,10 @@ public class MainScreen
 
         mOrientation = new OrientationCapability(getWindowManager().getDefaultDisplay());
         mFaceDetector = new FaceDetectionCapability(this);
+        AutoFocusCapability autoFocus = new AutoFocusCapability();
 
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_preview);
-        mCameraPreview.setCapabilities(mOrientation, mFaceDetector);
+        mCameraPreview.setCapabilities(mOrientation, mFaceDetector, autoFocus);
 
         mLayerView = (LayerView) findViewById(R.id.layer_view);
         mName = (EditText)findViewById(R.id.name_text);
