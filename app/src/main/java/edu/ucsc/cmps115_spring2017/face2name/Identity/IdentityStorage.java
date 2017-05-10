@@ -128,6 +128,30 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
+    public boolean hasIdentity(Identity identity) {
+        SQLiteDatabase db = getReadableDatabase();
+
+        String[] queryParams = new String[] {
+                Long.toString(identity.key)
+        };
+        Cursor queryResult = db.rawQuery(Queries.HasIdentity, queryParams);
+
+        int identityCount = queryResult.getInt(0);
+        queryResult.close();
+
+        return identityCount > 0;
+    }
+
+    public void hasIdentity(final Identity identity, final AsyncQueryCallbacks<Boolean> callbacks) {
+        AsyncQuery<Boolean> query = new AsyncQuery<Boolean>() {
+            @Override
+            protected Boolean onExecute() {
+                return hasIdentity(identity);
+            }
+        };
+        query.execute();
+    }
+
     public void removeIdentity(Identity identity) {
         SQLiteDatabase db = getWritableDatabase();
 
@@ -271,6 +295,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         final static String GetIdentity = "SELECT * FROM " + DBInfo.TABLE_NAME + " WHERE " + DBInfo._ID + "=?";
         final static String RemoveIdentity = "DELETE FROM " + DBInfo.TABLE_NAME + " WHERE " + DBInfo._ID + "=?";
         final static String ClearIdentities = "DELETE FROM " + DBInfo.TABLE_NAME;
+        final static String HasIdentity = "SELECT COUNT(*) FROM " + DBInfo.TABLE_NAME + " WHERE " + DBInfo._ID + "=?";
     }
 
     // Column index for an identity's key field.
