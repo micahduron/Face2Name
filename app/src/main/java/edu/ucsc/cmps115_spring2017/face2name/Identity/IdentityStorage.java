@@ -1,5 +1,6 @@
 package edu.ucsc.cmps115_spring2017.face2name.Identity;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseErrorHandler;
@@ -49,11 +50,11 @@ public final class IdentityStorage extends SQLiteOpenHelper {
     public void storeIdentity(Identity identity) {
         SQLiteDatabase db = getWritableDatabase();
 
-        String[] queryParams = new String[] {
-                Long.toString(identity.key),
-                identity.name
-        };
-        db.rawQuery(Queries.InsertIdentity, queryParams);
+        ContentValues queryValues = new ContentValues();
+        queryValues.put(DBInfo._ID, identity.key);
+        queryValues.put("name", identity.name);
+
+        db.insertWithOnConflict(DBInfo.TABLE_NAME, null, queryValues, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     public void storeIdentity(final Identity identity, final AsyncQueryCallbacks<Void> callbacks) {
@@ -288,9 +289,6 @@ public final class IdentityStorage extends SQLiteOpenHelper {
                                             "(" + DBInfo._ID + " INTEGER PRIMARY KEY NOT NULL," +
                                             "name TEXT)";
         final static String DumpIdentities = "SELECT * FROM " + DBInfo.TABLE_NAME;
-        final static String InsertIdentity = "INSERT OR REPLACE (" + DBInfo._ID + ", name) INTO " + DBInfo.TABLE_NAME + " VALUES" +
-                                                "(?1," +
-                                                "COALESCE((SELECT name FROM " + DBInfo.TABLE_NAME + "WHERE " + DBInfo._ID + "=?1), ?2))";
         final static String GetIdentity = "SELECT * FROM " + DBInfo.TABLE_NAME + " WHERE " + DBInfo._ID + "=?";
         final static String RemoveIdentity = "DELETE FROM " + DBInfo.TABLE_NAME + " WHERE " + DBInfo._ID + "=?";
         final static String ClearIdentities = "DELETE FROM " + DBInfo.TABLE_NAME;
