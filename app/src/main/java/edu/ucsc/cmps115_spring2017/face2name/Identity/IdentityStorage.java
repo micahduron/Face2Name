@@ -76,7 +76,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         int rowCount = queryResult.getCount();
         List<Identity> ret = new ArrayList<>(rowCount);
 
-        if (rowCount > 0) {
+        if (queryResult.moveToFirst()) {
             do {
                 long key = getKey(queryResult);
                 String name = getName(queryResult);
@@ -105,10 +105,9 @@ public final class IdentityStorage extends SQLiteOpenHelper {
                 Long.toString(identity.key)
         };
         Cursor queryResult = db.rawQuery(Queries.GetIdentity, queryParams);
-
         Identity result = null;
 
-        if (queryResult.getCount() > 0) {
+        if (queryResult.moveToFirst()) {
             String name = getName(queryResult);
 
             result = new Identity(identity.key, name);
@@ -135,7 +134,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
                 Long.toString(identity.key)
         };
         Cursor queryResult = db.rawQuery(Queries.HasIdentity, queryParams);
-
+        queryResult.moveToFirst();
         int identityCount = queryResult.getInt(0);
         queryResult.close();
 
