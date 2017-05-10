@@ -9,6 +9,7 @@ public class AppStateMachine {
         INIT,
         IDLE,
         SELECTED,
+        FACE_SELECTED,
         ERROR
     }
 
