@@ -217,9 +217,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         AsyncQuery(AsyncQueryCallbacks<T> callbacks) {
             super();
 
-            if (callbacks != null) {
-                mCallbacks = callbacks;
-            }
+            mCallbacks = callbacks;
         }
 
         protected abstract T onExecute();
