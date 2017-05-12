@@ -32,8 +32,8 @@ public class MainScreen
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.activity_main_screen);
-
         mStateMachine = new AppStateMachine(AppState.INIT, this);
+
     }
 
     @Override
@@ -51,6 +51,25 @@ public class MainScreen
 
         mLayerView = (LayerView) findViewById(R.id.layer_view);
         mName = (EditText)findViewById(R.id.name_text);
+
+        mLayerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (mStateMachine.getState() == AppState.INIT) return false;
+
+                if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    if (mStateMachine.getState() == AppState.IDLE) {
+                        mTouchX = (int) event.getX();
+                        mTouchY = (int) event.getY();
+
+                        mStateMachine.setState(AppState.SELECTED);
+                    } else if (mStateMachine.getState() == AppState.FACE_SELECTED && !getLocationOnScreen().contains(mTouchX, mTouchY)) {
+                        mStateMachine.setState(AppState.IDLE);
+                    }
+                }
+                return true;
+            }
+        });
     }
 
     @Override
@@ -149,22 +168,6 @@ public class MainScreen
         mName.clearFocus();
     }
 
-    public boolean onTouchEvent(MotionEvent event) {
-        // Ignore touch events during initialization.
-        if (mStateMachine.getState() == AppState.INIT) return false;
-
-        if(event.getAction() == MotionEvent.ACTION_DOWN) {
-            if (mStateMachine.getState() == AppState.IDLE) {
-                mTouchX = (int) event.getX();
-                mTouchY = (int) event.getY();
-
-                mStateMachine.setState(AppState.SELECTED);
-            } else if (mStateMachine.getState() == AppState.FACE_SELECTED && !getLocationOnScreen().contains(mTouchX, mTouchY)) {
-                mStateMachine.setState(AppState.IDLE);
-            }
-        }
-        return true;
-    }
 
     // Makes a rectangle so we can check if we tapped inside of our textbox
     private Rect getLocationOnScreen( ) {
