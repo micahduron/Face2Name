@@ -124,7 +124,6 @@ public class MainScreen
                 croppedBM = Bitmap.createBitmap(previewBM, (int) faceRect.left, (int) faceRect.top, (int)faceRect.width(), (int)faceRect.height());
                 Log.d("Bitmap", "BM Width: " + Float.toString(croppedBM.getWidth()));
                 Log.d("Bitmap", "BM Height: " + Float.toString(croppedBM.getHeight()));
-                /*
                 int a = previewBM.getPixel((int) faceRect.left + 5, (int) faceRect.top + 2);
                 int b = croppedBM.getPixel(5,2);
                 if (a==b){
@@ -134,7 +133,6 @@ public class MainScreen
                 if (croppedBM.sameAs(emptyBitmap)) {
                     Log.d("Bitmap", "empty");
                 }
-                */
             }
 
         }
