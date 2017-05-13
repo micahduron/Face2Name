@@ -1,10 +1,12 @@
 package edu.ucsc.cmps115_spring2017.face2name;
 
+import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -113,6 +115,28 @@ public class MainScreen
 
         if (mStateMachine.getState() == AppState.SELECTED) {
             mStateMachine.setState(tappedOnFace ? AppState.FACE_SELECTED : AppState.IDLE);
+            // If the face is selected
+            if (mStateMachine.getState() == AppState.FACE_SELECTED) {
+                Log.d("Bitmap", "Face selected");
+                Log.d("Bitmap", "Rect Width: " + Float.toString(faceRect.width()));
+                Log.d("Bitmap", "Rect Height: " + Float.toString(faceRect.height()));
+                previewBM = mCameraPreview.getBitmap();
+                croppedBM = Bitmap.createBitmap(previewBM, (int) faceRect.left, (int) faceRect.top, (int)faceRect.width(), (int)faceRect.height());
+                Log.d("Bitmap", "BM Width: " + Float.toString(croppedBM.getWidth()));
+                Log.d("Bitmap", "BM Height: " + Float.toString(croppedBM.getHeight()));
+                /*
+                int a = previewBM.getPixel((int) faceRect.left + 5, (int) faceRect.top + 2);
+                int b = croppedBM.getPixel(5,2);
+                if (a==b){
+                    Log.d("Bitmap", "same");
+                }
+                Bitmap emptyBitmap = Bitmap.createBitmap(croppedBM.getWidth(), croppedBM.getHeight(), croppedBM.getConfig());
+                if (croppedBM.sameAs(emptyBitmap)) {
+                    Log.d("Bitmap", "empty");
+                }
+                */
+            }
+
         }
     }
 
@@ -188,4 +212,6 @@ public class MainScreen
     private LayerView mLayerView;
     private int mTouchX, mTouchY;
     private InputMethodManager mInputManager;
+    private Bitmap previewBM;
+    private Bitmap croppedBM;
 }
