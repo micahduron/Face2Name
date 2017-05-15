@@ -228,12 +228,12 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
-    private long getKey(Cursor queryResult) {
+    private static long getKey(Cursor queryResult) {
         int keyIndex = queryResult.getColumnIndex(DBInfo._ID);
         return queryResult.getLong(keyIndex);
     }
 
-    private String getName(Cursor queryResult) {
+    private static String getName(Cursor queryResult) {
         int nameIndex = queryResult.getColumnIndex("name");
         return !queryResult.isNull(nameIndex) ? queryResult.getString(nameIndex) : null;
     }
