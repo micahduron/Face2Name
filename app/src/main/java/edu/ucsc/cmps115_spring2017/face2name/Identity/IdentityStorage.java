@@ -213,17 +213,13 @@ public final class IdentityStorage extends SQLiteOpenHelper {
     }
 
     private long getKey(Cursor queryResult) {
-        if (mKeyIndex == -1) {
-            mKeyIndex = queryResult.getColumnIndex(DBInfo._ID);
-        }
-        return queryResult.getLong(mKeyIndex);
+        int keyIndex = queryResult.getColumnIndex(DBInfo._ID);
+        return queryResult.getLong(keyIndex);
     }
 
     private String getName(Cursor queryResult) {
-        if (mNameIndex == -1) {
-            mNameIndex = queryResult.getColumnIndex("name");
-        }
-        return !queryResult.isNull(mNameIndex) ? queryResult.getString(mNameIndex) : null;
+        int nameIndex = queryResult.getColumnIndex("name");
+        return !queryResult.isNull(nameIndex) ? queryResult.getString(nameIndex) : null;
     }
 
     private class AsyncQueryResult<T> {
@@ -314,10 +310,4 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         final static String HasIdentity = "SELECT COUNT(*) FROM " + DBInfo.TABLE_NAME + " WHERE " + DBInfo._ID + "=?";
         final static String CountIdentities = "SELECT COUNT(*) FROM " + DBInfo.TABLE_NAME;
     }
-
-    // Column index for an identity's key field.
-    private int mKeyIndex = -1;
-
-    // Column index for an identity's name field.
-    private int mNameIndex = -1;
 }
