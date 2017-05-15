@@ -29,7 +29,7 @@
             android:layout_gravity="center_horizontal|top"
             android:background="#DD808080"
             android:padding="12dip"
-            android:hint="Enter name here"
+            android:hint="@string/name_prompt"
             android:inputType="textPersonName"
             android:textColor="@android:color/white"
             android:textColorHint="#DDC0C0C0"
