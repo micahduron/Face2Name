@@ -22,9 +22,27 @@ import java.util.List;
  */
 
 public final class IdentityStorage extends SQLiteOpenHelper {
+    /**
+     * Asynchronous query callbacks.
+     *
+     * These callbacks are intended to allow the caller to handle the result of an asynchronous
+     * query.
+     *
+     * @param <T> The return type of the query.
+     */
     public abstract class AsyncQueryCallbacks<T> {
+        /**
+         * Called when an asynchronous query succeeds.
+         *
+         * @param result Result of the query.
+         */
         protected void onSuccess(T result) {}
 
+        /**
+         * Called when an asynchronous query fails and an exception is thrown.
+         *
+         * @param ex thrown exception
+         */
         protected void onError(Exception ex) {
             ex.printStackTrace();
         }
@@ -55,6 +73,11 @@ public final class IdentityStorage extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * Stores an identity.
+     *
+     * @param identity Identity object
+     */
     public void storeIdentity(Identity identity) {
         SQLiteDatabase db = getWritableDatabase();
 
@@ -67,6 +90,12 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         storeIdentityFace(identity);
     }
 
+    /**
+     * Asynchronous version of {@link #storeIdentity(Identity)}
+     *
+     * @param identity
+     * @param callbacks
+     */
     public void storeIdentity(final Identity identity, final AsyncQueryCallbacks<Void> callbacks) {
         AsyncQuery<Void> query = new AsyncQuery<Void>(callbacks) {
             @Override
@@ -79,6 +108,11 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
+    /**
+     * Returns a {@link List} containing every stored identity.
+     *
+     * @return Identity list
+     */
     public List<Identity> dumpIdentities() {
         SQLiteDatabase db = getReadableDatabase();
 
@@ -103,6 +137,11 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         return ret;
     }
 
+    /**
+     * Asynchronous version of {@link #dumpIdentities()}.
+     *
+     * @param callbacks Asynchronous callback object
+     */
     public void dumpIdentities(final AsyncQueryCallbacks<List<Identity>> callbacks) {
         AsyncQuery<List<Identity>> query = new AsyncQuery<List<Identity>>(callbacks) {
             @Override
@@ -113,6 +152,16 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
+    /**
+     * Fetches an identity from the database.
+     *
+     * {@link Identity} objects are not required to contain every piece of information all at once
+     * (e.g. an object may have its {@code name} field be {@code null}, etc.). Such an object is
+     * considered 'incomplete.' This method may be used to 'complete' {@link Identity} objects.
+     *
+     * @param identity Identity object whose {@code .key} field is the search key
+     * @return A valid {@link Identity} object if a matching entry exists, {@code null} otherwise
+     */
     public Identity getIdentity(Identity identity) {
         SQLiteDatabase db = getReadableDatabase();
         String[] queryParams = new String[] {
@@ -132,6 +181,12 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         return result;
     }
 
+    /**
+     * Asynchronous version of {@link #getIdentity(Identity)}.
+     *
+     * @param identity
+     * @param callbacks
+     */
     public void getIdentity(final Identity identity, final AsyncQueryCallbacks<Identity> callbacks) {
         AsyncQuery<Identity> query = new AsyncQuery<Identity>(callbacks) {
             @Override
@@ -142,6 +197,12 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
+    /**
+     * Returns whether or not a particular identity is being stored within the database.
+     *
+     * @param identity Target identity
+     * @return true if the identity is being stored, false otherwise.
+     */
     public boolean hasIdentity(Identity identity) {
         SQLiteDatabase db = getReadableDatabase();
 
@@ -156,6 +217,12 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         return identityCount > 0;
     }
 
+    /**
+     * Asynchronous version of {@link #hasIdentity(Identity)}.
+     *
+     * @param identity
+     * @param callbacks
+     */
     public void hasIdentity(final Identity identity, final AsyncQueryCallbacks<Boolean> callbacks) {
         AsyncQuery<Boolean> query = new AsyncQuery<Boolean>() {
             @Override
@@ -166,6 +233,11 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
+    /**
+     * Returns the current number of identities being stored by the database.
+     *
+     * @return The number of identities stored within the database.
+     */
     public int countIdentities() {
         SQLiteDatabase db = getReadableDatabase();
 
@@ -177,6 +249,11 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         return identityCount;
     }
 
+    /**
+     * Asynchronous version of {@link #countIdentities()}.
+     *
+     * @param callbacks
+     */
     public void countIdentities(AsyncQueryCallbacks<Integer> callbacks) {
         AsyncQuery<Integer> query = new AsyncQuery<Integer>() {
             @Override
@@ -187,6 +264,13 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
+    /**
+     * Removes an identity from the database.
+     *
+     * Does nothing if the identity was not being stored in the first place.
+     *
+     * @param identity target identity
+     */
     public void removeIdentity(Identity identity) {
         SQLiteDatabase db = getWritableDatabase();
 
@@ -197,6 +281,12 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         getFaceFile(identity).delete();
     }
 
+    /**
+     * Asynchronous version of {@link #removeIdentity(Identity)}.
+     *
+     * @param identity
+     * @param callbacks
+     */
     public void removeIdentity(final Identity identity, final AsyncQueryCallbacks<Void> callbacks) {
         AsyncQuery<Void> query = new AsyncQuery<Void>(callbacks) {
             @Override
@@ -209,6 +299,9 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         query.execute();
     }
 
+    /**
+     * Deletes all identities, leaving the database empty.
+     */
     public void clearIdentities() {
         SQLiteDatabase db = getWritableDatabase();
 
@@ -216,6 +309,11 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         mImagesDir.delete();
     }
 
+    /**
+     * Asynchronous version of {@link #clearIdentities()}.
+     *
+     * @param callbacks
+     */
     public void clearIdentities(final AsyncQueryCallbacks<Void> callbacks) {
         AsyncQuery<Void> query = new AsyncQuery<Void>(callbacks) {
             @Override
