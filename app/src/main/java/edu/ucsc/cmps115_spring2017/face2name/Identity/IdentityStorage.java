@@ -6,9 +6,14 @@ import android.database.Cursor;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.provider.BaseColumns;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +32,9 @@ public final class IdentityStorage extends SQLiteOpenHelper {
 
     public IdentityStorage(Context context) {
         this(context, DBInfo.DB_NAME, null, DBInfo.VERSION);
+
+        mImagesDir = new File(context.getFilesDir(), "faces");
+        mImagesDir.mkdir();
     }
 
     private IdentityStorage(Context context, String dbName, SQLiteDatabase.CursorFactory factory, int dbVersion) {
@@ -55,6 +63,8 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         queryValues.put("name", identity.name);
 
         db.insertWithOnConflict(DBInfo.TABLE_NAME, null, queryValues, SQLiteDatabase.CONFLICT_REPLACE);
+
+        storeIdentityFace(identity);
     }
 
     public void storeIdentity(final Identity identity, final AsyncQueryCallbacks<Void> callbacks) {
@@ -82,7 +92,10 @@ public final class IdentityStorage extends SQLiteOpenHelper {
                 long key = getKey(queryResult);
                 String name = getName(queryResult);
 
-                ret.add(new Identity(key, name));
+                Identity identity = new Identity(key, name, null);
+                identity.image = getIdentityFace(identity);
+
+                ret.add(identity);
             } while (queryResult.moveToNext());
         }
         queryResult.close();
@@ -111,7 +124,8 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         if (queryResult.moveToFirst()) {
             String name = getName(queryResult);
 
-            result = new Identity(identity.key, name);
+            result = new Identity(identity.key, name, null);
+            result.image = getIdentityFace(identity);
         }
         queryResult.close();
 
@@ -180,6 +194,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
                 Long.toString(identity.key)
         };
         db.rawQuery(Queries.RemoveIdentity, queryParams);
+        getFaceFile(identity).delete();
     }
 
     public void removeIdentity(final Identity identity, final AsyncQueryCallbacks<Void> callbacks) {
@@ -198,6 +213,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
 
         db.execSQL(Queries.ClearIdentities);
+        mImagesDir.delete();
     }
 
     public void clearIdentities(final AsyncQueryCallbacks<Void> callbacks) {
@@ -220,6 +236,28 @@ public final class IdentityStorage extends SQLiteOpenHelper {
     private String getName(Cursor queryResult) {
         int nameIndex = queryResult.getColumnIndex("name");
         return !queryResult.isNull(nameIndex) ? queryResult.getString(nameIndex) : null;
+    }
+
+    private File getFaceFile(Identity identity) {
+        return new File(mImagesDir, Long.toString(identity.key) + "_face.jpg");
+    }
+
+    private void storeIdentityFace(Identity identity) {
+        File imageFile = getFaceFile(identity);
+        FileOutputStream outStream = null;
+
+        try {
+            outStream = new FileOutputStream(imageFile);
+        } catch (FileNotFoundException ex) {
+            throw new RuntimeException("Could not store face image.");
+        }
+        identity.image.compress(Bitmap.CompressFormat.JPEG, 80, outStream);
+    }
+
+    private Bitmap getIdentityFace(Identity identity) {
+        File imageFile = getFaceFile(identity);
+
+        return BitmapFactory.decodeFile(imageFile.getPath());
     }
 
     private class AsyncQueryResult<T> {
@@ -310,4 +348,5 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         final static String HasIdentity = "SELECT COUNT(*) FROM " + DBInfo.TABLE_NAME + " WHERE " + DBInfo._ID + "=?";
         final static String CountIdentities = "SELECT COUNT(*) FROM " + DBInfo.TABLE_NAME;
     }
+    private File mImagesDir;
 }
