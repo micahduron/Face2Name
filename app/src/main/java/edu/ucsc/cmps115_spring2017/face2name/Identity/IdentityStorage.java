@@ -243,6 +243,8 @@ public final class IdentityStorage extends SQLiteOpenHelper {
     }
 
     private void storeIdentityFace(Identity identity) {
+        if (identity.image == null) return;
+
         File imageFile = getFaceFile(identity);
         FileOutputStream outStream = null;
 
@@ -257,7 +259,7 @@ public final class IdentityStorage extends SQLiteOpenHelper {
     private Bitmap getIdentityFace(Identity identity) {
         File imageFile = getFaceFile(identity);
 
-        return BitmapFactory.decodeFile(imageFile.getPath());
+        return imageFile.exists() ? BitmapFactory.decodeFile(imageFile.getPath()) : null;
     }
 
     private class AsyncQueryResult<T> {
