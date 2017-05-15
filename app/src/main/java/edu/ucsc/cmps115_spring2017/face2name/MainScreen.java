@@ -115,24 +115,9 @@ public class MainScreen
 
         if (mStateMachine.getState() == AppState.SELECTED) {
             mStateMachine.setState(tappedOnFace ? AppState.FACE_SELECTED : AppState.IDLE);
-            // If the face is selected
+            // If the face is selected call getBM
             if (mStateMachine.getState() == AppState.FACE_SELECTED) {
-                Log.d("Bitmap", "Face selected");
-                Log.d("Bitmap", "Rect Width: " + Float.toString(faceRect.width()));
-                Log.d("Bitmap", "Rect Height: " + Float.toString(faceRect.height()));
-                previewBM = mCameraPreview.getBitmap();
-                croppedBM = Bitmap.createBitmap(previewBM, (int) faceRect.left, (int) faceRect.top, (int)faceRect.width(), (int)faceRect.height());
-                Log.d("Bitmap", "BM Width: " + Float.toString(croppedBM.getWidth()));
-                Log.d("Bitmap", "BM Height: " + Float.toString(croppedBM.getHeight()));
-                int a = previewBM.getPixel((int) faceRect.left + 5, (int) faceRect.top + 2);
-                int b = croppedBM.getPixel(5,2);
-                if (a==b){
-                    Log.d("Bitmap", "same");
-                }
-                Bitmap emptyBitmap = Bitmap.createBitmap(croppedBM.getWidth(), croppedBM.getHeight(), croppedBM.getConfig());
-                if (croppedBM.sameAs(emptyBitmap)) {
-                    Log.d("Bitmap", "empty");
-                }
+                getBM(faceRect);
             }
 
         }
@@ -199,6 +184,13 @@ public class MainScreen
         tempRect.bottom = location[1] + mName.getHeight();
 
         return tempRect;
+    }
+
+    // Returns a bitmap cropped to the rectangle's dimensions
+    private Bitmap getBM(RectF faceRect){
+        previewBM = mCameraPreview.getBitmap();
+        croppedBM = Bitmap.createBitmap(previewBM, (int) faceRect.left, (int) faceRect.top, (int)faceRect.width(), (int)faceRect.height());
+        return croppedBM;
     }
 
     private AppStateMachine mStateMachine;
