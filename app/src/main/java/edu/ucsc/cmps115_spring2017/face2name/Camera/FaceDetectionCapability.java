@@ -26,6 +26,15 @@ public final class FaceDetectionCapability extends CameraCapability implements C
             throw new RuntimeException("Cannot call stopFaceDetection in an uninitialized state.");
         }
         mCameraInst.getCamera().stopFaceDetection();
+        mNumDetectedFaces = 0;
+    }
+
+    /**
+     * Returns the number of faces the capability is detecting at the current moment.
+     * @return Number of detected faces.
+     */
+    public int getNumDetectedFaces() {
+        return mNumDetectedFaces;
     }
 
     public interface FaceDetectionListener {
@@ -103,6 +112,7 @@ public final class FaceDetectionCapability extends CameraCapability implements C
     @Override
     public void onFaceDetection(Camera.Face[] faces, Camera camera) {
         Face[] faceObjs = new Face[faces.length];
+        mNumDetectedFaces = faces.length;
 
         for (int i = 0; i < faces.length; ++i) {
             faceObjs[i] = new Face(faces[i]);
@@ -112,4 +122,5 @@ public final class FaceDetectionCapability extends CameraCapability implements C
 
     private CameraInstance mCameraInst;
     private FaceDetectionListener mListener;
+    private int mNumDetectedFaces;
 }

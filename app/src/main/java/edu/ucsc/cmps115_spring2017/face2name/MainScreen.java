@@ -71,7 +71,7 @@ public class MainScreen
 
                 switch (mStateMachine.getState()) {
                     case IDLE:
-                        if (isDetectingFaces()) {
+                        if (mFaceDetector.getNumDetectedFaces() > 0) {
                             mStateMachine.setState(AppState.SCREEN_TAPPED);
                         }
                         break;
@@ -154,8 +154,6 @@ public class MainScreen
 
     @Override
     public void onFaceDetection(Face[] faces) {
-        mNumDetectedFaces = faces.length;
-
         if (mStateMachine.getState() == AppState.SCREEN_TAPPED) {
             for (final Face face : faces) {
                 RectF faceRect = new RectF();
@@ -230,10 +228,6 @@ public class MainScreen
         return null;
     }
 
-    private boolean isDetectingFaces() {
-        return mNumDetectedFaces > 0;
-    }
-
     private void clearFaceRegions() {
         LayerView.Drawer drawer = mLayerView.getDrawer();
         drawer.beginDrawing();
@@ -258,7 +252,6 @@ public class MainScreen
     private InputMethodManager mInputManager;
     private Bitmap mPreviewBitmap;
     private List<RectF> mFaceRegions = new ArrayList<>();
-    private int mNumDetectedFaces;
     private RectF mSelectedFace;
     // NOTE: Initialized to a test value.
     private Identity mCurrentIdentity = new Identity(42, null, null);
