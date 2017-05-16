@@ -6,10 +6,30 @@ package edu.ucsc.cmps115_spring2017.face2name;
 
 public class AppStateMachine {
     public enum AppState {
+        /**
+         * The app is within this state from when the app is started to when the camera is first
+         * initialized.
+         */
         INIT,
+        /**
+         * The camera is streaming preview images to the screen.
+         */
         IDLE,
-        SELECTED,
+        /**
+         * The screen has been tapped by the user.
+         */
+        SCREEN_TAPPED,
+        /**
+         * The camera preview is paused.
+         */
+        SCREEN_PAUSED,
+        /**
+         * The user has tapped a face on the screen.
+         */
         FACE_SELECTED,
+        /**
+         * A generic error state.
+         */
         ERROR
     }
 

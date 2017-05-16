@@ -31,6 +31,7 @@
             android:padding="12dip"
             android:hint="@string/name_prompt"
             android:inputType="textPersonName"
+            android:imeOptions="actionDone"
             android:textColor="@android:color/white"
             android:textColorHint="#DDC0C0C0"
             android:textCursorDrawable="@null"
