@@ -5,6 +5,7 @@ import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -171,6 +172,8 @@ public class MainScreen
 
     @Override
     public void onAppStateChange(AppState oldState, AppState newState) {
+        Log.d("State change", "Old: " + oldState.toString() + ", New: " + newState.toString());
+
         switch (newState) {
             case IDLE:
                 mFaceRegions.clear();
