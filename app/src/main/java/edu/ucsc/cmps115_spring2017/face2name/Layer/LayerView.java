@@ -47,6 +47,15 @@ public final class LayerView extends TextureView implements TextureView.SurfaceT
         return new Drawer();
     }
 
+    public Rect getBoundingRect() {
+        return new Rect(
+                getLeft(),
+                getTop(),
+                getRight(),
+                getBottom()
+        );
+    }
+
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         Drawer drawer = getDrawer();

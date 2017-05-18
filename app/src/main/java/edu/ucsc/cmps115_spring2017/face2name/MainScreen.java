@@ -155,11 +155,15 @@ public class MainScreen
     @Override
     public void onFaceDetection(Face[] faces) {
         if (mStateMachine.getState() == AppState.SCREEN_TAPPED) {
+            RectF visibleRegion = new RectF(mLayerView.getBoundingRect());
+
             for (final Face face : faces) {
                 RectF faceRect = new RectF();
                 mFaceTransform.mapRect(faceRect, face.getRect());
 
-                mFaceRegions.add(faceRect);
+                if (visibleRegion.contains(faceRect)) {
+                    mFaceRegions.add(faceRect);
+                }
             }
             mStateMachine.setState(AppState.SCREEN_PAUSED);
         }
