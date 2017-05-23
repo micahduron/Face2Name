@@ -1,2 +1,1 @@
 ScrumBoard: https://face2name.mingle.thoughtworks.com/projects/face2name/cards/grid?color_by=Priority&filters%5B%5D=%5BType%5D%5Bis%5D%5BStory%5D&group_by%5Blane%5D=Status&lanes=New%2CIn+progress%2CComplete&tab=Card+Wall
-Burndown: https://docs.google.com/spreadsheets/d/12Wa9aSdHYhIOYHLe5M-kebJsWlzphav1wCRiXaIWKmk/edit?usp=sharing
