@@ -15,6 +15,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.opencv.android.OpenCVLoader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,12 @@ public class MainScreen
         FaceDetectionCapability.FaceDetectionListener,
         AppStateMachine.Callbacks
 {
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            Log.e("OpenCV", "Failed to load library.");
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -187,9 +194,10 @@ public class MainScreen
                 if (oldState == AppState.FACE_SELECTED) {
                     hideNameBox();
                 }
-                drawFaceRegions();
                 mCameraPreview.stopPreview();
                 mFaceDetector.stopFaceDetection();
+
+                drawFaceRegions();
                 break;
             case FACE_SELECTED:
                 Identity ident = mIdentityStorage.getIdentity(mCurrentIdentity);
