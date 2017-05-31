@@ -1,10 +1,6 @@
 package edu.ucsc.cmps115_spring2017.face2name.CV;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -12,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import edu.ucsc.cmps115_spring2017.face2name.Identity.Identity;
+import edu.ucsc.cmps115_spring2017.face2name.Utils.Image;
 import edu.ucsc.cmps115_spring2017.face2name.Utils.Rectangle;
 
 /**
@@ -40,71 +37,55 @@ public final class FaceRecognition {
         initialize();
 
         for (final Identity ident : identities) {
-            Mat matImage = new Mat();
-            Utils.bitmapToMat(ident.image, matImage);
-
-            addToModel(matImage, ident.key);
+            addToModel(ident.image, ident.key);
         }
     }
 
     private native void native_initialize();
 
-    public Identity addFace(Bitmap face, Long id) {
-        Mat normalizedFace = normalizeFace(face);
+    public Identity addFace(Image face, Long id) {
+        Image normalizedFace = normalizeFace(face);
 
         if (normalizedFace == null) return null;
 
         addToModel(normalizedFace, id);
 
-        Bitmap normalizedFaceBitmap = Bitmap.createBitmap(normalizedFace.cols(), normalizedFace.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(normalizedFace, normalizedFaceBitmap);
-
-        return new Identity(id, null, normalizedFaceBitmap);
+        return new Identity(id, null, normalizedFace);
     }
 
-    private void addToModel(Mat face, Long id) {
+    private void addToModel(Image faceImage, Long id) {
         if (mIdSet.contains(id)) {
             throw new RuntimeException("ID already exists within model.");
         }
         mIdSet.add(id);
 
-        native_addToModel(face.getNativeObjAddr(), id);
+        native_addToModel(faceImage.getMat().getNativeObjAddr(), id);
     }
 
     private native void native_addToModel(long matPtr, long id);
 
-    public RecognitionResult identify(Bitmap faceImage) {
-        Mat normalizedFace = normalizeFace(faceImage);
+    public RecognitionResult identify(Image faceImage) {
+        Image normalizedFace = normalizeFace(faceImage);
 
         if (normalizedFace == null) {
             return new RecognitionResult(RECOG_FAILED);
         }
-        IdentifyResult identResult = native_identify(normalizedFace.getNativeObjAddr());
+        IdentifyResult identResult = native_identify(normalizedFace.getMat().getNativeObjAddr());
 
         if ((identResult.status & RECOG_SUCCESS) == 0) {
             return new RecognitionResult(RECOG_FAILED);
         } else if ((identResult.status & FACE_FOUND) == 0) {
             return new RecognitionResult(RECOG_SUCCESS);
         }
-        Bitmap normalizedFaceBitmap = Bitmap.createBitmap(normalizedFace.cols(), normalizedFace.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(normalizedFace, normalizedFaceBitmap);
-
-        Identity ident = new Identity(identResult.id, null, normalizedFaceBitmap);
+        Identity ident = new Identity(identResult.id, null, normalizedFace);
 
         return new RecognitionResult(RECOG_SUCCESS | FACE_FOUND, ident);
     }
 
     private native IdentifyResult native_identify(long faceImagePtr);
 
-    private Mat normalizeFace(Bitmap bitmapImage) {
-        Mat matImage = new Mat();
-        Utils.bitmapToMat(bitmapImage, matImage);
-
-        return normalizeFace(matImage);
-    }
-
-    private Mat normalizeFace(Mat matImage) {
-        return matImage;
+    private Image normalizeFace(Image image) {
+        return image;
     }
 
     public native void close();

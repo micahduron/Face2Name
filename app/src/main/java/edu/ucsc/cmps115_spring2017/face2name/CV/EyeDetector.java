@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ucsc.cmps115_spring2017.face2name.R;
+import edu.ucsc.cmps115_spring2017.face2name.Utils.Image;
 import edu.ucsc.cmps115_spring2017.face2name.Utils.Rectangle;
 
 /**
@@ -24,17 +25,10 @@ public class EyeDetector {
         mEyeClassifier = new ImageClassifier(context, R.raw.haarcascade_eye_tree_eyeglasses);
     }
 
-    public List<Rectangle> detect(Bitmap bitmapImage) {
-        Mat matImage = new Mat();
-        Utils.bitmapToMat(bitmapImage, matImage);
-
-        return detect(matImage);
-    }
-
-    public List<Rectangle> detect(Mat matImage) {
+    public List<Rectangle> detect(Image image) {
         MatOfRect rectMat = new MatOfRect();
 
-        mEyeClassifier.detectMultiScale(matImage, rectMat);
+        mEyeClassifier.detectMultiScale(image.getMat(), rectMat);
 
         Rect[] eyeRects = rectMat.toArray();
         List<Rectangle> result = new ArrayList<>(eyeRects.length);
