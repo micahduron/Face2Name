@@ -50,7 +50,7 @@ public final class FaceRecognition {
         return addFace(face, faceId);
     }
 
-    public Identity addFace(Image face, Long id) {
+    public Identity addFace(Image face, long id) {
         Image normalizedFace = normalizeFace(face);
 
         if (normalizedFace == null) return null;
@@ -60,7 +60,7 @@ public final class FaceRecognition {
         return new Identity(id, null, normalizedFace);
     }
 
-    private void addToModel(Image faceImage, Long id) {
+    private void addToModel(Image faceImage, long id) {
         if (mIdSet.contains(id)) {
             throw new RuntimeException("ID already exists within model.");
         }
