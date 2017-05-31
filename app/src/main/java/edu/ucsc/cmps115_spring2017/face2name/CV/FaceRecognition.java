@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import edu.ucsc.cmps115_spring2017.face2name.Identity.Identity;
 import edu.ucsc.cmps115_spring2017.face2name.Utils.Image;
@@ -42,6 +43,12 @@ public final class FaceRecognition {
     }
 
     private native void native_initialize();
+
+    public Identity addFace(Image face) {
+        long faceId = UUID.randomUUID().getLeastSignificantBits();
+
+        return addFace(face, faceId);
+    }
 
     public Identity addFace(Image face, Long id) {
         Image normalizedFace = normalizeFace(face);
