@@ -48,7 +48,7 @@ public final class FaceRecognition {
 
     public Identity addFace(Image face) {
         long faceId = UUID.randomUUID().getLeastSignificantBits();
-        Log.d("Face", "Face added");
+
         return addFace(face, faceId);
     }
 
@@ -69,7 +69,6 @@ public final class FaceRecognition {
         mIdSet.add(id);
 
         native_addToModel(faceImage.getMat().getNativeObjAddr(), id);
-        Log.d("Face", "Face added to model");
     }
 
     private native void native_addToModel(long matPtr, long id);
@@ -77,7 +76,6 @@ public final class FaceRecognition {
     public RecognitionResult identify(Image faceImage) {
         Image normalizedFace = normalizeFace(faceImage);
 
-        Log.d("Face", "Face identified");
 
         if (normalizedFace == null) {
             return new RecognitionResult(RECOG_FAILED);

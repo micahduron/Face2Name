@@ -72,10 +72,10 @@ public class MainScreen
         mLayerView = (LayerView) findViewById(R.id.layer_view);
         mNameBox = (EditText) findViewById(R.id.name_text);
 
-        mStorage = new IdentityStorage(this);
         mFaceRecognizer = new FaceRecognition(this);
 
-        mIdentityList = mStorage.dumpIdentities();
+        // Dump identities in database into list and initialize list
+        mIdentityList = mIdentityStorage.dumpIdentities();
         mFaceRecognizer.initialize(mIdentityList);
 
         mLayerView.setOnTouchListener(new View.OnTouchListener() {
@@ -113,9 +113,6 @@ public class MainScreen
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    Log.d("Face", "Here");
-                    //mCurrentIdentity.name = v.getText().toString();
-                    //mIdentityStorage.storeIdentity(mCurrentIdentity);
                     mFaceID.name = v.getText().toString();
                     mIdentityStorage.storeIdentity(mFaceID);
 
@@ -197,22 +194,21 @@ public class MainScreen
                 drawFaceRegions();
                 break;
             case FACE_SELECTED:
-                mFaceID = mFaceRecognizer.addFace(getBM(mSelectedFace));
-                mResult = mFaceRecognizer.identify(getBM(mSelectedFace));
-                mFaceRecognizer.close();
-
-                //Identity ident = mIdentityStorage.getIdentity(mCurrentIdentity);
-                //showNameBox(ident != null ? ident.name : null);
-
+                // Crop the selected face bitmap, return image
+                mCropImage = getBM(mSelectedFace);
+                // Identify face image
+                mResult = mFaceRecognizer.identify(mCropImage);
+                // If the face is found set the identity to the result identity
+                // Else addface and set identity to newly created one
                 if (mResult.faceFound()) {
-                    Identity ident = mIdentityStorage.getIdentity(mResult.getIdentity());
+                    ident = mIdentityStorage.getIdentity(mResult.getIdentity());
                     showNameBox(ident != null ? ident.name : null);
                 }else {
-                    Identity ident = mIdentityStorage.getIdentity(mFaceID);
+                    mFaceID = mFaceRecognizer.addFace(mCropImage);
+                    ident = mIdentityStorage.getIdentity(mFaceID);
                     showNameBox(ident != null ? ident.name : null);
                 }
-
-
+                mFaceRecognizer.close();
                 break;
         }
     }
@@ -282,19 +278,9 @@ public class MainScreen
     private Image getBM(Rectangle faceRect) {
         mPreviewBitmap = (mPreviewBitmap == null ? mCameraPreview.getBitmap() : mCameraPreview.getBitmap(mPreviewBitmap));
         mCroppedBitmap = Bitmap.createBitmap(mPreviewBitmap, (int) faceRect.left, (int) faceRect.top, (int) faceRect.width(), (int) faceRect.height());
-        //Log.d("Face", Integer.toString(mPreviewBitmap.getPixel((int)faceRect.left,(int)faceRect.top)));
-        //Log.d("Face", Integer.toString(mCroppedBitmap.getPixel(0,0)));
-        Bitmap emptyBitmap = Bitmap.createBitmap(mCroppedBitmap.getWidth(), mCroppedBitmap.getHeight(), mCroppedBitmap.getConfig());
-        if (mCroppedBitmap.sameAs(emptyBitmap)) {
-            Log.d("Face", "Cropped bitmap is empty");
-        }
-        Log.d("Face", "Bitmap cropped");
+
         mFaceImage = new Image(mCroppedBitmap);
-        //mFaceImage.toBitmap();
-        if (mFaceImage == null) {
-            Log.d("Face", "Image is null");
-        }
-        Log.d("Face", "Image returned");
+
         return mFaceImage;
     }
 
@@ -310,11 +296,12 @@ public class MainScreen
     private Bitmap mCroppedBitmap;
     private List<Rectangle> mFaceRegions = new ArrayList<>();
     private Rectangle mSelectedFace;
-    private IdentityStorage mStorage;
     private FaceRecognition mFaceRecognizer;
     private FaceRecognition.RecognitionResult mResult;
     private List<Identity> mIdentityList = new ArrayList<>();
     private Image mFaceImage;
+    private Image mCropImage;
+    private Identity ident;
     private Identity mFaceID;
 
     // NOTE: Initialized to a test value.
