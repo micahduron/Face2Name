@@ -92,23 +92,41 @@ public final class FaceRecognition {
 
     private Image normalizeFace(Image faceImage) {
 
+        //Get Matrix of Image
         Mat faceImageMat = faceImage.getMat();
+
+        //Changes the ImageMatrix to grayscale
         org.opencv.imgproc.Imgproc.cvtColor(faceImageMat, faceImageMat, org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY);
-        Mat eyeMat = new Mat(2, 3, CvType.CV_32FC1); //2x3 Matrix holding 3 pairs of point coords
+
+
         List<Rectangle> eyeCentersList = mEyeDetector.detect(faceImage);
 
+        //Checks to see that exactly two eyes are detected
         if(eyeCentersList.size() != 2){
             //Log.e(EYE ARRAY SIZE ERROR, "eye detect array size= " + eyeCentersList.size());
             return null;
         }
 
+        //Initialize Matrix for eye orientation
+        Mat eyeMat = new Mat(2, 3, CvType.CV_32FC1); //2x3 Matrix holding 3 pairs of point coords
+
+        //Create third point per OpenCv's requirements in estimateRigidTransform of 3 pairs of points
         PointF third = thirdEquilateralPoint(eyeCentersList.get(0).getCenter(), eyeCentersList.get(1).getCenter());
+
+        //Input point information into Matrix
         putInMat(eyeMat, 0, (int) eyeCentersList.get(0).centerX(), (int) eyeCentersList.get(0).centerY());
         putInMat(eyeMat, 1, (int) eyeCentersList.get(1).centerX(), (int) eyeCentersList.get(1).centerY());
         putInMat(eyeMat, 2, (int) third.x, (int) third.y);
 
-        mMTransform = org.opencv.video.Video.estimateRigidTransform(faceImageMat, eyeMat, false);
-        org.opencv.imgproc.Imgproc.warpAffine(faceImageMat, faceImageMat, mMTransform, faceImageMat.size());
+        //Apply estimateRigidTransform's transformation Matrix to the face's matrix using warpAffine
+ 
+        org.opencv.imgproc.Imgproc.warpAffine(
+                faceImageMat,
+                faceImageMat,
+                org.opencv.video.Video.estimateRigidTransform(faceImageMat,
+                                                              eyeMat,
+                                                              false),
+                faceImageMat.size());
 
         return new Image(faceImageMat);
     }
@@ -169,5 +187,4 @@ public final class FaceRecognition {
     private Set<Long> mIdSet = new HashSet<>();
     private EyeDetector mEyeDetector;
     private long mNativePtr;
-    private Mat mMTransform;
 }
