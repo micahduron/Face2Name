@@ -1,10 +1,11 @@
 package edu.ucsc.cmps115_spring2017.face2name.Identity;
 
-import android.graphics.Bitmap;
 
 /**
  * Created by micah on 4/29/17.
  */
+
+import edu.ucsc.cmps115_spring2017.face2name.Utils.Image;
 
 /**
  * An {@code Identity} object contains the identifying details of an individual.
@@ -21,9 +22,9 @@ public final class Identity {
     /**
      * A bitmap image of the individual's face.
      */
-    public Bitmap image;
+    public Image image;
 
-    public Identity(long keyVal, String nameVal, Bitmap imageVal) {
+    public Identity(long keyVal, String nameVal, Image imageVal) {
         key = keyVal;
         name = nameVal;
         image = imageVal;

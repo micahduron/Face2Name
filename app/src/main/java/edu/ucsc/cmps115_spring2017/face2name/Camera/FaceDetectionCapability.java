@@ -10,10 +10,6 @@ import android.hardware.Camera;
  */
 
 public final class FaceDetectionCapability extends CameraCapability implements Camera.FaceDetectionListener {
-    public FaceDetectionCapability(FaceDetectionListener listener) {
-        mListener = listener;
-    }
-
     public void startFaceDetection() {
         if (mCameraInst == null) {
             throw new RuntimeException("Cannot call startFaceDetection in an uninitialized state.");
@@ -26,7 +22,7 @@ public final class FaceDetectionCapability extends CameraCapability implements C
             throw new RuntimeException("Cannot call stopFaceDetection in an uninitialized state.");
         }
         mCameraInst.getCamera().stopFaceDetection();
-        mNumDetectedFaces = 0;
+        mFaces = null;
     }
 
     /**
@@ -34,11 +30,18 @@ public final class FaceDetectionCapability extends CameraCapability implements C
      * @return Number of detected faces.
      */
     public int getNumDetectedFaces() {
-        return mNumDetectedFaces;
+        return mFaces != null ? mFaces.length : 0;
     }
 
-    public interface FaceDetectionListener {
-        void onFaceDetection(Face[] faces);
+    public Face[] getFaces() {
+        if (mFaces == null) return null;
+
+        Face[] faces = new Face[mFaces.length];
+
+        for (int i = 0; i < mFaces.length; ++i) {
+            faces[i] = new Face(mFaces[i]);
+        }
+        return faces;
     }
 
     public class Face {
@@ -111,16 +114,9 @@ public final class FaceDetectionCapability extends CameraCapability implements C
 
     @Override
     public void onFaceDetection(Camera.Face[] faces, Camera camera) {
-        Face[] faceObjs = new Face[faces.length];
-        mNumDetectedFaces = faces.length;
-
-        for (int i = 0; i < faces.length; ++i) {
-            faceObjs[i] = new Face(faces[i]);
-        }
-        mListener.onFaceDetection(faceObjs);
+        mFaces = faces;
     }
 
     private CameraInstance mCameraInst;
-    private FaceDetectionListener mListener;
-    private int mNumDetectedFaces;
+    private Camera.Face[] mFaces;
 }

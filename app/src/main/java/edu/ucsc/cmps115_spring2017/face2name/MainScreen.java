@@ -2,7 +2,6 @@ package edu.ucsc.cmps115_spring2017.face2name;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -15,6 +14,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.opencv.android.OpenCVLoader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,13 +27,19 @@ import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability;
 import edu.ucsc.cmps115_spring2017.face2name.Identity.Identity;
 import edu.ucsc.cmps115_spring2017.face2name.Identity.IdentityStorage;
 import edu.ucsc.cmps115_spring2017.face2name.Layer.LayerView;
+import edu.ucsc.cmps115_spring2017.face2name.Utils.Rectangle;
 
 public class MainScreen
         extends AppCompatActivity
         implements CameraPreview.PreviewCallbacks,
-        FaceDetectionCapability.FaceDetectionListener,
         AppStateMachine.Callbacks
 {
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            Log.e("OpenCV", "Failed to load library.");
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +61,7 @@ public class MainScreen
         mInputManager = (InputMethodManager) getSystemService(MainScreen.INPUT_METHOD_SERVICE);
 
         mOrientation = new OrientationCapability(getWindowManager().getDefaultDisplay());
-        mFaceDetector = new FaceDetectionCapability(this);
+        mFaceDetector = new FaceDetectionCapability();
         AutoFocusCapability autoFocus = new AutoFocusCapability();
 
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_preview);
@@ -73,7 +79,7 @@ public class MainScreen
                 switch (mStateMachine.getState()) {
                     case IDLE:
                         if (mFaceDetector.getNumDetectedFaces() > 0) {
-                            mStateMachine.setState(AppState.SCREEN_TAPPED);
+                            mStateMachine.setState(AppState.SCREEN_PAUSED);
                         }
                         break;
                     case SCREEN_PAUSED:
@@ -82,7 +88,7 @@ public class MainScreen
                         mStateMachine.setState(mSelectedFace == null ? AppState.IDLE : AppState.FACE_SELECTED);
                         break;
                     case FACE_SELECTED:
-                        RectF prevSelectedFace = mSelectedFace;
+                        Rectangle prevSelectedFace = mSelectedFace;
                         mSelectedFace = getSelectedFace((int) event.getX(), (int) event.getY());
 
                         if (mSelectedFace == null) {
@@ -154,23 +160,6 @@ public class MainScreen
     }
 
     @Override
-    public void onFaceDetection(Face[] faces) {
-        if (mStateMachine.getState() == AppState.SCREEN_TAPPED) {
-            RectF visibleRegion = new RectF(mLayerView.getBoundingRect());
-
-            for (final Face face : faces) {
-                RectF faceRect = new RectF();
-                mFaceTransform.mapRect(faceRect, face.getRect());
-
-                if (visibleRegion.contains(faceRect)) {
-                    mFaceRegions.add(faceRect);
-                }
-            }
-            mStateMachine.setState(AppState.SCREEN_PAUSED);
-        }
-    }
-
-    @Override
     public void onAppStateChange(AppState oldState, AppState newState) {
         Log.d("State change", "Old: " + oldState.toString() + ", New: " + newState.toString());
 
@@ -187,9 +176,14 @@ public class MainScreen
                 if (oldState == AppState.FACE_SELECTED) {
                     hideNameBox();
                 }
-                drawFaceRegions();
+                // This has to be called before .stopFaceDetection() because that call will clear
+                // the list of detected faces.
+                getFaceRegions();
+
                 mCameraPreview.stopPreview();
                 mFaceDetector.stopFaceDetection();
+
+                drawFaceRegions();
                 break;
             case FACE_SELECTED:
                 Identity ident = mIdentityStorage.getIdentity(mCurrentIdentity);
@@ -215,19 +209,37 @@ public class MainScreen
         mNameBox.clearFocus();
     }
 
+    private void getFaceRegions() {
+        Face[] faceList = mFaceDetector.getFaces();
+        if (faceList == null) return;
+
+        Rectangle visibleRegion = new Rectangle(mLayerView.getBoundingRect());
+
+        for (final Face face : faceList) {
+            Rectangle faceRect = new Rectangle();
+
+            mFaceTransform.mapRect(faceRect, face.getRect());
+            faceRect.scale(1.5f);
+
+            if (visibleRegion.contains(faceRect)) {
+                mFaceRegions.add(faceRect);
+            }
+        }
+    }
+
     private void drawFaceRegions() {
         LayerView.Drawer drawer = mLayerView.getDrawer();
         drawer.beginDrawing();
         drawer.clearScreen();
 
-        for (final RectF faceRect : mFaceRegions) {
+        for (final Rectangle faceRect : mFaceRegions) {
             drawer.drawBox(faceRect);
         }
         drawer.endDrawing();
     }
 
-    private RectF getSelectedFace(int x, int y) {
-        for (final RectF faceRect : mFaceRegions) {
+    private Rectangle getSelectedFace(int x, int y) {
+        for (final Rectangle faceRect : mFaceRegions) {
             if (faceRect.contains(x, y)) {
                 return faceRect;
             }
@@ -243,7 +255,7 @@ public class MainScreen
     }
 
     // Returns a bitmap cropped to the rectangle's dimensions
-    private Bitmap getBM(RectF faceRect){
+    private Bitmap getBM(Rectangle faceRect){
         mPreviewBitmap = mPreviewBitmap == null ? mCameraPreview.getBitmap() : mCameraPreview.getBitmap(mPreviewBitmap);
 
         return  Bitmap.createBitmap(mPreviewBitmap, (int) faceRect.left, (int) faceRect.top, (int)faceRect.width(), (int)faceRect.height());
@@ -258,8 +270,8 @@ public class MainScreen
     private LayerView mLayerView;
     private InputMethodManager mInputManager;
     private Bitmap mPreviewBitmap;
-    private List<RectF> mFaceRegions = new ArrayList<>();
-    private RectF mSelectedFace;
+    private List<Rectangle> mFaceRegions = new ArrayList<>();
+    private Rectangle mSelectedFace;
     // NOTE: Initialized to a test value.
     private Identity mCurrentIdentity = new Identity(42, null, null);
     private IdentityStorage mIdentityStorage;
