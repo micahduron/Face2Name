@@ -44,6 +44,9 @@ public class Image {
      * @param bitmap the image to be stored
      */
     public void setImage(Bitmap bitmap) {
+        if (bitmap == null) {
+            throw new IllegalArgumentException("Input cannot be null");
+        }
         mBitmap = bitmap;
         mRepr = ReprType.REPR_BITMAP;
 
@@ -56,6 +59,9 @@ public class Image {
      * @param mat the image to be stored
      */
     public void setImage(Mat mat) {
+        if (mat == null) {
+            throw new IllegalArgumentException("Input cannot be null.");
+        }
         mMat = mat;
         mRepr = ReprType.REPR_MAT;
 
