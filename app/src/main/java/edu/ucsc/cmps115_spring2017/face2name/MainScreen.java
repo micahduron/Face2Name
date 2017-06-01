@@ -72,8 +72,11 @@ public class MainScreen
         mLayerView = (LayerView) findViewById(R.id.layer_view);
         mNameBox = (EditText) findViewById(R.id.name_text);
 
-        //mIdentityList = mStorage.dumpIdentities();
-        //mFaceRecognizer.initialize(mIdentityList);
+        mStorage = new IdentityStorage(this);
+        mFaceRecognizer = new FaceRecognition(this);
+
+        mIdentityList = mStorage.dumpIdentities();
+        mFaceRecognizer.initialize(mIdentityList);
 
         mLayerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -191,17 +194,21 @@ public class MainScreen
                 drawFaceRegions();
                 break;
             case FACE_SELECTED:
-                if (mSelectedFace == null) {
-                    Log.d("Face", "Face is null");
+                mFaceID = mFaceRecognizer.addFace(getBM(mSelectedFace));
+                mResult = mFaceRecognizer.identify(getBM(mSelectedFace));
+                mFaceRecognizer.close();
+
+                if (mResult.faceFound()) {
+                    Identity ident = mIdentityStorage.getIdentity(mResult.getIdentity());
+                    showNameBox(ident != null ? ident.name : null);
+                }else {
+                    Identity ident = mIdentityStorage.getIdentity(mFaceID);
+                    showNameBox(ident != null ? ident.name : null);
                 }
-                //getBM(mSelectedFace);
-                mFaceRecognizer.addFace(getBM(mSelectedFace));
-                Log.d("Face Selected", "Added face");
-                //mRecognition.identify(getBM(mSelectedFace));
 
-                Identity ident = mIdentityStorage.getIdentity(mCurrentIdentity);
 
-                showNameBox(ident != null ? ident.name : null);
+
+
                 break;
         }
     }
@@ -283,7 +290,7 @@ public class MainScreen
         if (mFaceImage == null) {
             Log.d("Face", "Image is null");
         }
-        Log.d("Face Selected", "Image returned");
+        Log.d("Face", "Image returned");
         return mFaceImage;
     }
 
@@ -301,9 +308,11 @@ public class MainScreen
     private Rectangle mSelectedFace;
     private IdentityStorage mStorage;
     private FaceRecognition mFaceRecognizer;
-    private FaceRecognition mRecognition;
+    private FaceRecognition.RecognitionResult mResult;
     private List<Identity> mIdentityList = new ArrayList<>();
     private Image mFaceImage;
+    private Identity mFaceID;
+
     // NOTE: Initialized to a test value.
     private Identity mCurrentIdentity = new Identity(42, null, null);
     private IdentityStorage mIdentityStorage;

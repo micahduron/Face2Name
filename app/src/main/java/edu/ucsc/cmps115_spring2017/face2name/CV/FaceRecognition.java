@@ -48,7 +48,7 @@ public final class FaceRecognition {
 
     public Identity addFace(Image face) {
         long faceId = UUID.randomUUID().getLeastSignificantBits();
-
+        Log.d("Face", "Face added");
         return addFace(face, faceId);
     }
 
@@ -76,7 +76,7 @@ public final class FaceRecognition {
     public RecognitionResult identify(Image faceImage) {
         Image normalizedFace = normalizeFace(faceImage);
 
-        //Log.d("Face", "Face identified");
+        Log.d("Face", "Face identified");
 
         if (normalizedFace == null) {
             return new RecognitionResult(RECOG_FAILED);
