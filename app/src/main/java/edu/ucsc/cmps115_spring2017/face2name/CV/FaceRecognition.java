@@ -1,12 +1,14 @@
 package edu.ucsc.cmps115_spring2017.face2name.CV;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
 
 import edu.ucsc.cmps115_spring2017.face2name.Identity.Identity;
 import edu.ucsc.cmps115_spring2017.face2name.Utils.Image;
@@ -34,7 +36,7 @@ public final class FaceRecognition {
         native_initialize();
     }
 
-    private void initialize(List<Identity> identities) {
+    public void initialize(List<Identity> identities) {
         initialize();
 
         for (final Identity ident : identities) {
@@ -73,6 +75,8 @@ public final class FaceRecognition {
 
     public RecognitionResult identify(Image faceImage) {
         Image normalizedFace = normalizeFace(faceImage);
+
+        //Log.d("Face", "Face identified");
 
         if (normalizedFace == null) {
             return new RecognitionResult(RECOG_FAILED);

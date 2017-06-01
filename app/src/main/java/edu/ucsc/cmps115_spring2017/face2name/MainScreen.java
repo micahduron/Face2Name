@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewDebug;
 import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.ucsc.cmps115_spring2017.face2name.AppStateMachine.AppState;
+import edu.ucsc.cmps115_spring2017.face2name.CV.FaceRecognition;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.AutoFocusCapability;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.FaceDetectionCapability;
@@ -27,13 +29,13 @@ import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability;
 import edu.ucsc.cmps115_spring2017.face2name.Identity.Identity;
 import edu.ucsc.cmps115_spring2017.face2name.Identity.IdentityStorage;
 import edu.ucsc.cmps115_spring2017.face2name.Layer.LayerView;
+import edu.ucsc.cmps115_spring2017.face2name.Utils.Image;
 import edu.ucsc.cmps115_spring2017.face2name.Utils.Rectangle;
 
 public class MainScreen
         extends AppCompatActivity
         implements CameraPreview.PreviewCallbacks,
-        AppStateMachine.Callbacks
-{
+        AppStateMachine.Callbacks {
     static {
         if (!OpenCVLoader.initDebug()) {
             Log.e("OpenCV", "Failed to load library.");
@@ -68,7 +70,10 @@ public class MainScreen
         mCameraPreview.setCapabilities(mOrientation, mFaceDetector, autoFocus);
 
         mLayerView = (LayerView) findViewById(R.id.layer_view);
-        mNameBox = (EditText)findViewById(R.id.name_text);
+        mNameBox = (EditText) findViewById(R.id.name_text);
+
+        //mIdentityList = mStorage.dumpIdentities();
+        //mFaceRecognizer.initialize(mIdentityList);
 
         mLayerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -186,6 +191,14 @@ public class MainScreen
                 drawFaceRegions();
                 break;
             case FACE_SELECTED:
+                if (mSelectedFace == null) {
+                    Log.d("Face", "Face is null");
+                }
+                //getBM(mSelectedFace);
+                mFaceRecognizer.addFace(getBM(mSelectedFace));
+                Log.d("Face Selected", "Added face");
+                //mRecognition.identify(getBM(mSelectedFace));
+
                 Identity ident = mIdentityStorage.getIdentity(mCurrentIdentity);
 
                 showNameBox(ident != null ? ident.name : null);
@@ -254,11 +267,24 @@ public class MainScreen
         drawer.endDrawing();
     }
 
-    // Returns a bitmap cropped to the rectangle's dimensions
-    private Bitmap getBM(Rectangle faceRect){
-        mPreviewBitmap = mPreviewBitmap == null ? mCameraPreview.getBitmap() : mCameraPreview.getBitmap(mPreviewBitmap);
-
-        return  Bitmap.createBitmap(mPreviewBitmap, (int) faceRect.left, (int) faceRect.top, (int)faceRect.width(), (int)faceRect.height());
+    // Returns an Image of the cropped bitmap to the rectangle's dimensions
+    private Image getBM(Rectangle faceRect) {
+        mPreviewBitmap = (mPreviewBitmap == null ? mCameraPreview.getBitmap() : mCameraPreview.getBitmap(mPreviewBitmap));
+        mCroppedBitmap = Bitmap.createBitmap(mPreviewBitmap, (int) faceRect.left, (int) faceRect.top, (int) faceRect.width(), (int) faceRect.height());
+        //Log.d("Face", Integer.toString(mPreviewBitmap.getPixel((int)faceRect.left,(int)faceRect.top)));
+        //Log.d("Face", Integer.toString(mCroppedBitmap.getPixel(0,0)));
+        Bitmap emptyBitmap = Bitmap.createBitmap(mCroppedBitmap.getWidth(), mCroppedBitmap.getHeight(), mCroppedBitmap.getConfig());
+        if (mCroppedBitmap.sameAs(emptyBitmap)) {
+            Log.d("Face", "Cropped bitmap is empty");
+        }
+        Log.d("Face", "Bitmap cropped");
+        mFaceImage = new Image(mCroppedBitmap);
+        //mFaceImage.toBitmap();
+        if (mFaceImage == null) {
+            Log.d("Face", "Image is null");
+        }
+        Log.d("Face Selected", "Image returned");
+        return mFaceImage;
     }
 
     private AppStateMachine mStateMachine;
@@ -270,8 +296,14 @@ public class MainScreen
     private LayerView mLayerView;
     private InputMethodManager mInputManager;
     private Bitmap mPreviewBitmap;
+    private Bitmap mCroppedBitmap;
     private List<Rectangle> mFaceRegions = new ArrayList<>();
     private Rectangle mSelectedFace;
+    private IdentityStorage mStorage;
+    private FaceRecognition mFaceRecognizer;
+    private FaceRecognition mRecognition;
+    private List<Identity> mIdentityList = new ArrayList<>();
+    private Image mFaceImage;
     // NOTE: Initialized to a test value.
     private Identity mCurrentIdentity = new Identity(42, null, null);
     private IdentityStorage mIdentityStorage;
