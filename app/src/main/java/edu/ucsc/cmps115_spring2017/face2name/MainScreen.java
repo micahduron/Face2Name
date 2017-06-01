@@ -113,8 +113,11 @@ public class MainScreen
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    mCurrentIdentity.name = v.getText().toString();
-                    mIdentityStorage.storeIdentity(mCurrentIdentity);
+                    Log.d("Face", "Here");
+                    //mCurrentIdentity.name = v.getText().toString();
+                    //mIdentityStorage.storeIdentity(mCurrentIdentity);
+                    mFaceID.name = v.getText().toString();
+                    mIdentityStorage.storeIdentity(mFaceID);
 
                     mStateMachine.setState(AppState.SCREEN_PAUSED);
 
@@ -198,6 +201,9 @@ public class MainScreen
                 mResult = mFaceRecognizer.identify(getBM(mSelectedFace));
                 mFaceRecognizer.close();
 
+                //Identity ident = mIdentityStorage.getIdentity(mCurrentIdentity);
+                //showNameBox(ident != null ? ident.name : null);
+
                 if (mResult.faceFound()) {
                     Identity ident = mIdentityStorage.getIdentity(mResult.getIdentity());
                     showNameBox(ident != null ? ident.name : null);
@@ -205,8 +211,6 @@ public class MainScreen
                     Identity ident = mIdentityStorage.getIdentity(mFaceID);
                     showNameBox(ident != null ? ident.name : null);
                 }
-
-
 
 
                 break;
