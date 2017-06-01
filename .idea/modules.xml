@@ -3,7 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/face2name-face-recognition.iml" filepath="$PROJECT_DIR$/face2name-face-recognition.iml" />
+      <module fileurl="file://$PROJECT_DIR$/face2name.iml" filepath="$PROJECT_DIR$/face2name.iml" />
       <module fileurl="file://$PROJECT_DIR$/opencv/opencv.iml" filepath="$PROJECT_DIR$/opencv/opencv.iml" />
     </modules>
   </component>

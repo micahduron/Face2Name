@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.PointF;
 
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
 import org.opencv.core.CvType;
 
 import java.io.IOException;
@@ -90,11 +89,7 @@ public final class FaceRecognition {
 
     private native IdentifyResult native_identify(long faceImagePtr);
 
-   private native Mat estimateRigidTransform(Mat src, Mat dst, boolean fullAffine);
-
-    private native void warpAffine(Mat src, Mat dst, Mat M, Size dsize);
-
-    private Mat normalizeFace(Image faceImage) {
+    private Image normalizeFace(Image faceImage) {
 
         Mat faceImageMat = faceImage.getMat();
         Mat eyeMat = new Mat(2, 3, CvType.CV_32FC1); //2x3 Matrix holding 3 pairs of point coords
@@ -110,19 +105,20 @@ public final class FaceRecognition {
         putInMat(eyeMat, 1, (int) eyeCentersList.get(1).centerX(), (int) eyeCentersList.get(1).centerY());
         putInMat(eyeMat, 2, (int) third.x, (int) third.y);
 
-        mMTransform = estimateRigidTransform(faceImageMat, eyeMat, false);
-        warpAffine(faceImageMat, faceImageMat, mMTransform, faceImageMat.size());
-        return faceImageMat;
-    }
+        mMTransform = org.opencv.video.Video.estimateRigidTransform(faceImageMat, eyeMat, false);
+        org.opencv.imgproc.Imgproc.warpAffine(faceImageMat, faceImageMat, mMTransform, faceImageMat.size());
 
+        return new Image(faceImageMat);
+    }
+    //puts information into a Matrix
     private void putInMat(Mat m, int i, int x, int y){
         m.put(0, i, x);
         m.put(1, i, y);
     }
-
+    //Creates third point of an equilateral triangle pointing downwards
     private PointF thirdEquilateralPoint(PointF point1, PointF point2){
         float length = Math.abs(point1.x - point2.x);
-        return new PointF((point1.x + point2.x)/2, (float) (point1.y - Math.hypot(length, length/2)))
+        return new PointF((point1.x + point2.x)/2, (float) (point1.y - Math.hypot(length, length/2)));
     }
 
     public native void close();
