@@ -186,11 +186,16 @@ public final class CameraPreview
 
     @Override
     public void onCameraRelease() {
-        releaseCapabilities();
-
         mCallbacks.onCameraRelease();
 
+        releaseCapabilities();
+
         mReadyCallbackExecuted = false;
+    }
+
+    @Override
+    public void onCameraError(Exception ex) {
+        mCallbacks.onCameraError(ex);
     }
 
     protected Camera getCamera() {

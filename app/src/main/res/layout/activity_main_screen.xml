@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:keepScreenOn="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -21,16 +22,21 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-        <Button
-            android:id="@+id/name_button"
+        <EditText
+            android:id="@+id/name_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal|bottom"
+            android:layout_gravity="center_horizontal|top"
+            android:background="#DD808080"
             android:padding="12dip"
-            android:background="#22000000"
-            android:textColor="#ffffffff"
-            android:text="Input Name"
-            android:textSize="40px"/>
+            android:hint="@string/name_prompt"
+            android:inputType="textPersonName"
+            android:imeOptions="actionDone"
+            android:textColor="@android:color/white"
+            android:textColorHint="#DDC0C0C0"
+            android:textCursorDrawable="@null"
+            android:visibility="invisible"
+            android:textSize="20sp" />
     </FrameLayout>
 
 </FrameLayout>

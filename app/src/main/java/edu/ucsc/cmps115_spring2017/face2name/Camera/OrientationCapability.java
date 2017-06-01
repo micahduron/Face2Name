@@ -21,9 +21,13 @@ public class OrientationCapability extends CameraCapability {
         int displayAngle = getDisplayAngle();
         Camera.CameraInfo cameraInfo = mCameraInst.getCameraInfo();
 
-        int cameraAngle = OrientationCapability.calcCameraAngle(cameraInfo, displayAngle);
+        mCameraAngle = OrientationCapability.calcCameraAngle(cameraInfo, displayAngle);
 
-        mCameraInst.getCamera().setDisplayOrientation(cameraAngle);
+        mCameraInst.getCamera().setDisplayOrientation(mCameraAngle);
+    }
+
+    public int getCameraAngle() {
+        return mCameraAngle;
     }
 
     @Override
@@ -77,4 +81,5 @@ public class OrientationCapability extends CameraCapability {
 
     private Display mDisplay;
     private CameraInstance mCameraInst;
+    private int mCameraAngle;
 }

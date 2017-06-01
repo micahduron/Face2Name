@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Face2Name</string>
+    <string name="name_prompt">Enter name</string>
 </resources>
