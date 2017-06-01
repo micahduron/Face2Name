@@ -5,6 +5,7 @@ import android.graphics.PointF;
 
 import org.opencv.core.Mat;
 import org.opencv.core.CvType;
+import org.opencv.imgproc.Imgproc.;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -92,11 +93,12 @@ public final class FaceRecognition {
     private Image normalizeFace(Image faceImage) {
 
         Mat faceImageMat = faceImage.getMat();
+        org.opencv.imgproc.Imgproc.cvtColor(faceImageMat, faceImageMat, org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY);
         Mat eyeMat = new Mat(2, 3, CvType.CV_32FC1); //2x3 Matrix holding 3 pairs of point coords
         List<Rectangle> eyeCentersList = mEyeDetector.detect(faceImage);
 
         if(eyeCentersList.size() != 2){
-            //Log.e(EYE ARRAY SIZE ERRR, "eye detect array size= " + eyeCentersList.size());
+            //Log.e(EYE ARRAY SIZE ERROR, "eye detect array size= " + eyeCentersList.size());
             return null;
         }
 
