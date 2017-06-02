@@ -66,10 +66,10 @@ public final class FaceRecognition {
         }
         mIdSet.add(id);
 
-        native_addToModel(faceImage.getMat().getNativeObjAddr(), id);
+        native_addToModel(faceImage.getMat().getNativeObjAddr(), Long.toString(id));
     }
 
-    private native void native_addToModel(long matPtr, long id);
+    private native void native_addToModel(long matPtr, String id);
 
     public RecognitionResult identify(Image faceImage) {
         Image normalizedFace = normalizeFace(faceImage);
@@ -106,9 +106,9 @@ public final class FaceRecognition {
             this.status = status;
         }
 
-        IdentifyResult(int status, long id) {
+        IdentifyResult(int status, String id) {
             this.status = status;
-            this.id = id;
+            this.id = Long.parseLong(id);
         }
     }
 
