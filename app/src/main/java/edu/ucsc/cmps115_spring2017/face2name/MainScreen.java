@@ -1,6 +1,7 @@
 package edu.ucsc.cmps115_spring2017.face2name;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -8,7 +9,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewDebug;
 import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -16,8 +16,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.opencv.android.OpenCVLoader;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import edu.ucsc.cmps115_spring2017.face2name.AppStateMachine.AppState;
 import edu.ucsc.cmps115_spring2017.face2name.CV.FaceRecognition;
@@ -35,11 +37,13 @@ import edu.ucsc.cmps115_spring2017.face2name.Utils.Rectangle;
 public class MainScreen
         extends AppCompatActivity
         implements CameraPreview.PreviewCallbacks,
-        AppStateMachine.Callbacks {
+        AppStateMachine.Callbacks
+{
     static {
         if (!OpenCVLoader.initDebug()) {
             Log.e("OpenCV", "Failed to load library.");
         }
+        System.loadLibrary("native-lib");
     }
 
     @Override
@@ -47,8 +51,9 @@ public class MainScreen
         super.onCreate(savedInstanceState);
 
         mIdentityStorage = new IdentityStorage(this);
-        // NOTE: This is here for testing purposes. Will be removed before release.
         mIdentityStorage.clearIdentities();
+
+        mFaceRecognizer = new FaceRecognition(this);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -72,11 +77,8 @@ public class MainScreen
         mLayerView = (LayerView) findViewById(R.id.layer_view);
         mNameBox = (EditText) findViewById(R.id.name_text);
 
-        mFaceRecognizer = new FaceRecognition(this);
-
-        // Dump identities in database into list and initialize list
-        mIdentityList = mIdentityStorage.dumpIdentities();
-        mFaceRecognizer.initialize(mIdentityList);
+        List<Identity> trainingSet = getTrainingSet();
+        mFaceRecognizer.initialize(trainingSet);
 
         mLayerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -140,6 +142,13 @@ public class MainScreen
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        mFaceRecognizer.close();
+    }
+
+    @Override
     public void onCameraStart() {
 
     }
@@ -194,21 +203,20 @@ public class MainScreen
                 drawFaceRegions();
                 break;
             case FACE_SELECTED:
-                // Crop the selected face bitmap, return image
-                mCropImage = getBM(mSelectedFace);
-                // Identify face image
-                mResult = mFaceRecognizer.identify(mCropImage);
-                // If the face is found set the identity to the result identity
-                // Else addface and set identity to newly created one
-                if (mResult.faceFound()) {
-                    ident = mIdentityStorage.getIdentity(mResult.getIdentity());
-                    showNameBox(ident != null ? ident.name : null);
-                }else {
-                    mFaceID = mFaceRecognizer.addFace(mCropImage);
-                    ident = mIdentityStorage.getIdentity(mFaceID);
-                    showNameBox(ident != null ? ident.name : null);
+                Image faceImage = getFaceImage(mSelectedFace);
+                FaceRecognition.RecognitionResult identifyResult = mFaceRecognizer.identify(faceImage);
+
+                if (!identifyResult.faceFound()) {
+                    mFaceID = mFaceRecognizer.addFace(faceImage);
+                    showNameBox(null);
+                } else {
+                    Identity recogIdent = identifyResult.getIdentity();
+                    Identity dbIdent = mIdentityStorage.getIdentity(recogIdent);
+
+                    mFaceID = dbIdent != null ? dbIdent : recogIdent;
+
+                    showNameBox(mFaceID.name);
                 }
-                mFaceRecognizer.close();
                 break;
         }
     }
@@ -274,14 +282,39 @@ public class MainScreen
         drawer.endDrawing();
     }
 
-    // Returns an Image of the cropped bitmap to the rectangle's dimensions
-    private Image getBM(Rectangle faceRect) {
+    private Image getFaceImage(Rectangle faceRect) {
         mPreviewBitmap = (mPreviewBitmap == null ? mCameraPreview.getBitmap() : mCameraPreview.getBitmap(mPreviewBitmap));
-        mCroppedBitmap = Bitmap.createBitmap(mPreviewBitmap, (int) faceRect.left, (int) faceRect.top, (int) faceRect.width(), (int) faceRect.height());
+        Bitmap croppedImage = Bitmap.createBitmap(mPreviewBitmap, (int) faceRect.left, (int) faceRect.top, (int) faceRect.width(), (int) faceRect.height());
 
-        mFaceImage = new Image(mCroppedBitmap);
+        return FaceRecognition.normalizeFace(new Image(croppedImage));
+    }
 
-        return mFaceImage;
+    private List<Identity> getTrainingSet() {
+        if (mIdentityStorage.countIdentities() > 0) {
+            return mIdentityStorage.dumpIdentities();
+        }
+        return generateSeedTrainingSet();
+    }
+
+    private List<Identity> generateSeedTrainingSet() {
+        Bitmap[] seedFaces = new Bitmap[] {
+                getBitmapFromResource(R.drawable.seedface_01),
+                getBitmapFromResource(R.drawable.seedface_02)
+        };
+        List<Identity> seedIdentities = new ArrayList<>(seedFaces.length);
+
+        for (final Bitmap faceImage : seedFaces) {
+            long id = UUID.randomUUID().getLeastSignificantBits();
+            Image normalizedFace = FaceRecognition.normalizeFace(new Image(faceImage));
+            Identity seedIdentity = new Identity(id, null, normalizedFace);
+
+            seedIdentities.add(seedIdentity);
+        }
+        return seedIdentities;
+    }
+
+    private Bitmap getBitmapFromResource(int resId) {
+        return BitmapFactory.decodeResource(getResources(), resId);
     }
 
     private AppStateMachine mStateMachine;
@@ -293,18 +326,10 @@ public class MainScreen
     private LayerView mLayerView;
     private InputMethodManager mInputManager;
     private Bitmap mPreviewBitmap;
-    private Bitmap mCroppedBitmap;
     private List<Rectangle> mFaceRegions = new ArrayList<>();
     private Rectangle mSelectedFace;
     private FaceRecognition mFaceRecognizer;
-    private FaceRecognition.RecognitionResult mResult;
-    private List<Identity> mIdentityList = new ArrayList<>();
-    private Image mFaceImage;
-    private Image mCropImage;
     private Identity ident;
     private Identity mFaceID;
-
-    // NOTE: Initialized to a test value.
-    private Identity mCurrentIdentity = new Identity(42, null, null);
     private IdentityStorage mIdentityStorage;
 }

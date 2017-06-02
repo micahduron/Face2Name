@@ -3,6 +3,9 @@ package edu.ucsc.cmps115_spring2017.face2name.CV;
 import android.content.Context;
 import android.util.Log;
 
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
@@ -39,12 +42,23 @@ public final class FaceRecognition {
     public void initialize(List<Identity> identities) {
         initialize();
 
-        for (final Identity ident : identities) {
-            addToModel(ident.image, ident.key);
-        }
+        train(identities);
     }
 
     private native void native_initialize();
+
+    public void train(List<Identity> identities) {
+        FaceModel faceModel = new FaceModel(identities.size());
+
+        for (final Identity identity : identities) {
+            faceModel.addToModel(identity);
+        }
+        native_trainModel(faceModel);
+
+        faceModel.close();
+    }
+
+    private native void native_trainModel(FaceModel model);
 
     public Identity addFace(Image face) {
         long faceId = UUID.randomUUID().getLeastSignificantBits();
@@ -53,13 +67,9 @@ public final class FaceRecognition {
     }
 
     public Identity addFace(Image face, long id) {
-        Image normalizedFace = normalizeFace(face);
+        addToModel(face, id);
 
-        if (normalizedFace == null) return null;
-
-        addToModel(normalizedFace, id);
-
-        return new Identity(id, null, normalizedFace);
+        return new Identity(id, null, face);
     }
 
     private void addToModel(Image faceImage, long id) {
@@ -74,28 +84,31 @@ public final class FaceRecognition {
     private native void native_addToModel(long matPtr, String id);
 
     public RecognitionResult identify(Image faceImage) {
-        Image normalizedFace = normalizeFace(faceImage);
-
-
-        if (normalizedFace == null) {
-            return new RecognitionResult(RECOG_FAILED);
-        }
-        IdentifyResult identResult = native_identify(normalizedFace.getMat().getNativeObjAddr());
+        IdentifyResult identResult = new IdentifyResult();
+        native_identify(faceImage.getMat().getNativeObjAddr(), identResult);
 
         if ((identResult.status & RECOG_SUCCESS) == 0) {
             return new RecognitionResult(RECOG_FAILED);
         } else if ((identResult.status & FACE_FOUND) == 0) {
             return new RecognitionResult(RECOG_SUCCESS);
         }
-        Identity ident = new Identity(identResult.id, null, normalizedFace);
+        Identity ident = new Identity(identResult.id, null, faceImage);
 
         return new RecognitionResult(RECOG_SUCCESS | FACE_FOUND, ident);
     }
 
-    private native IdentifyResult native_identify(long faceImagePtr);
+    private native void native_identify(long faceImagePtr, IdentifyResult identResult);
 
-    private Image normalizeFace(Image image) {
-        return image;
+    public void setConfidenceThreshold(double threshold) {
+        mConfidenceThreshold = threshold;
+    }
+
+    public static Image normalizeFace(Image image) {
+        Image resultImage = new Image(new Mat());
+
+        Imgproc.cvtColor(image.getMat(), resultImage.getMat(), Imgproc.COLOR_RGB2GRAY);
+
+        return resultImage;
     }
 
     public native void close();
@@ -105,13 +118,11 @@ public final class FaceRecognition {
         int status;
         long id;
 
-        IdentifyResult(int status) {
-            this.status = status;
-        }
+        IdentifyResult() {}
 
-        IdentifyResult(int status, String id) {
+        void set(int status, String idStr) {
             this.status = status;
-            this.id = Long.parseLong(id);
+            this.id = idStr != null ? Long.parseLong(idStr) : 0;
         }
     }
 
@@ -141,6 +152,25 @@ public final class FaceRecognition {
         private Identity mIdentity;
     }
 
+    private class FaceModel {
+        FaceModel(int initialSize) {
+            this.native_initialize(initialSize);
+        }
+
+        void addToModel(Identity identity) {
+            this.native_addToModel(identity.image.getMat().getNativeObjAddr(), Long.toString(identity.key));
+        }
+
+        public native void close();
+
+        private native void native_addToModel(long imagePtr, String label);
+
+        private native void native_initialize(int initSize);
+
+        private long mNativePtr;
+    }
+
+    private double mConfidenceThreshold = 40.0;
     private Set<Long> mIdSet = new HashSet<>();
     private EyeDetector mEyeDetector;
     private long mNativePtr;
