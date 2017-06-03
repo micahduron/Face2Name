@@ -1,8 +1,10 @@
 package edu.ucsc.cmps115_spring2017.face2name.CV;
 
 import android.content.Context;
+import android.graphics.PointF;
 import android.util.Log;
 
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
@@ -103,12 +105,54 @@ public final class FaceRecognition {
         mConfidenceThreshold = threshold;
     }
 
-    public static Image normalizeFace(Image image) {
-        Image resultImage = new Image(new Mat());
+    public Image normalizeFace(Image faceImage) {
+        //Get Matrix of Image
+        Mat faceImageMat = faceImage.getMat();
 
-        Imgproc.cvtColor(image.getMat(), resultImage.getMat(), Imgproc.COLOR_RGB2GRAY);
+        //Changes the ImageMatrix to grayscale
+        org.opencv.imgproc.Imgproc.cvtColor(faceImageMat, faceImageMat, org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY);
 
-        return resultImage;
+
+        List<Rectangle> eyeCentersList = mEyeDetector.detect(faceImage);
+
+        //Checks to see that exactly two eyes are detected
+        if(eyeCentersList.size() != 2){
+            //Log.e(EYE ARRAY SIZE ERROR, "eye detect array size= " + eyeCentersList.size());
+            return null;
+        }
+
+        //Initialize Matrix for eye orientation
+        Mat eyeMat = new Mat(2, 3, CvType.CV_32FC1); //2x3 Matrix holding 3 pairs of point coords
+
+        //Create third point per OpenCv's requirements in estimateRigidTransform of 3 pairs of points
+        PointF third = thirdEquilateralPoint(eyeCentersList.get(0).getCenter(), eyeCentersList.get(1).getCenter());
+
+        //Input point information into Matrix
+        putInMat(eyeMat, 0, (int) eyeCentersList.get(0).centerX(), (int) eyeCentersList.get(0).centerY());
+        putInMat(eyeMat, 1, (int) eyeCentersList.get(1).centerX(), (int) eyeCentersList.get(1).centerY());
+        putInMat(eyeMat, 2, (int) third.x, (int) third.y);
+
+        //Apply estimateRigidTransform's transformation Matrix to the face's matrix using warpAffine
+
+        org.opencv.imgproc.Imgproc.warpAffine(
+                faceImageMat,
+                faceImageMat,
+                org.opencv.video.Video.estimateRigidTransform(faceImageMat,
+                        eyeMat,
+                        false),
+                faceImageMat.size());
+
+        return new Image(faceImageMat);
+    }
+    //puts information into a Matrix
+    private void putInMat(Mat m, int i, int x, int y){
+        m.put(0, i, x);
+        m.put(1, i, y);
+    }
+    //Creates third point of an equilateral triangle pointing downwards
+    private PointF thirdEquilateralPoint(PointF point1, PointF point2){
+        float length = Math.abs(point1.x - point2.x);
+        return new PointF((point1.x + point2.x)/2, (float) (point1.y - Math.hypot(length, length/2)));
     }
 
     public native void close();
