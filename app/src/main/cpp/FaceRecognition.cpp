@@ -29,7 +29,6 @@ void FaceRecognition::addToModel(const std::vector<cv::Mat>& images, const std::
 double FaceRecognition::identify(cv::Mat image, cv::String& labelString) {
     int predictedLabel;
     double predictionConfidence;
-
     m_faceRecognizer->predict(image, predictedLabel, predictionConfidence);
 
     __android_log_print(ANDROID_LOG_DEBUG, "FaceRecognition", "Prediction: Label = %d, Confidence = %f", predictedLabel, predictionConfidence);
