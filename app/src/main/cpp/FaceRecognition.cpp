@@ -9,9 +9,6 @@ void FaceRecognition::trainModel(const std::vector<cv::Mat>& images, const std::
     assert(images.size() == labelStrings.size());
 
     std::vector<int> labelIndexes = addLabels(labelStrings);
-
-    assert(labelIndexes.size() == images.size());
-
     m_faceRecognizer->train(images, labelIndexes);
 }
 
@@ -23,8 +20,9 @@ void FaceRecognition::addToModel(cv::Mat image, cv::String label) {
 }
 
 void FaceRecognition::addToModel(const std::vector<cv::Mat>& images, const std::vector<cv::String>& labelStrings) {
-    std::vector<int> labelIndexes = addLabels(labelStrings);
+    assert(images.size() == labelStrings.size());
 
+    std::vector<int> labelIndexes = addLabels(labelStrings);
     m_faceRecognizer->update(images, labelIndexes);
 }
 
@@ -52,5 +50,7 @@ std::vector<int> FaceRecognition::addLabels(const std::vector<cv::String>& label
 
         labelIndexes.push_back(m_counter);
     }
+    assert(labelIndexes.size() == labelStrings.size());
+
     return labelIndexes;
 }
