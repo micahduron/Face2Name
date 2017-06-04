@@ -5,6 +5,8 @@ package edu.ucsc.cmps115_spring2017.face2name.Identity;
  * Created by micah on 4/29/17.
  */
 
+import java.util.UUID;
+
 import edu.ucsc.cmps115_spring2017.face2name.Utils.Image;
 
 /**
@@ -28,5 +30,11 @@ public final class Identity {
         key = keyVal;
         name = nameVal;
         image = imageVal;
+    }
+
+    public static Identity makeIdentity(Image image) {
+        long randomKey = UUID.randomUUID().getLeastSignificantBits();
+
+        return new Identity(randomKey, null, image);
     }
 }

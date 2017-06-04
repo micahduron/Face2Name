@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 /**
  * Created by micah on 5/31/17.
@@ -105,6 +106,13 @@ public class Image {
      */
     public boolean isMat() {
         return getRepr() == ReprType.REPR_MAT;
+    }
+
+    public static void toGrayscale(Image image) {
+        Mat bwImage = new Mat();
+        Imgproc.cvtColor(image.getMat(), bwImage, Imgproc.COLOR_RGB2GRAY);
+
+        image.setImage(bwImage);
     }
 
     private static Bitmap matToBitmap(Mat mat) {

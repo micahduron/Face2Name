@@ -2,17 +2,17 @@ package edu.ucsc.cmps115_spring2017.face2name.CV;
 
 import android.content.Context;
 import android.graphics.PointF;
-import android.util.Log;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.video.Video;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 
 import edu.ucsc.cmps115_spring2017.face2name.Identity.Identity;
@@ -28,6 +28,17 @@ public final class FaceRecognition {
     public static final int FACE_FOUND = 1 << 1;
 
     private static final int RECOG_FAILED = 0;
+
+    private static final int STANDARD_IMAGE_HEIGHT = 100;
+    private static final int STANDARD_IMAGE_WIDTH = 100;
+
+    static {
+        PointF[] eyePoints = new PointF[] {
+                new PointF(STANDARD_IMAGE_WIDTH * 0.3f, STANDARD_IMAGE_HEIGHT / 3.0f),
+                new PointF(STANDARD_IMAGE_WIDTH * 0.7f, STANDARD_IMAGE_HEIGHT / 3.0f)
+        };
+        mReferenceEyePoints = calcEyeMat(eyePoints);
+    }
 
     public FaceRecognition(Context context) {
         try {
@@ -63,15 +74,15 @@ public final class FaceRecognition {
     private native void native_trainModel(FaceModel model);
 
     public Identity addFace(Image face) {
-        long faceId = UUID.randomUUID().getLeastSignificantBits();
+        Identity ident = Identity.makeIdentity(face);
 
-        return addFace(face, faceId);
+        addToModel(ident.image, ident.key);
+
+        return ident;
     }
 
-    public Identity addFace(Image face, long id) {
-        addToModel(face, id);
-
-        return new Identity(id, null, face);
+    public void addFace(Identity ident) {
+        addToModel(ident.image, ident.key);
     }
 
     private void addToModel(Image faceImage, long id) {
@@ -108,51 +119,65 @@ public final class FaceRecognition {
     public Image normalizeFace(Image faceImage) {
         //Get Matrix of Image
         Mat faceImageMat = faceImage.getMat();
+        Mat tempMat = new Mat();
 
         //Changes the ImageMatrix to grayscale
-        org.opencv.imgproc.Imgproc.cvtColor(faceImageMat, faceImageMat, org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(faceImageMat, tempMat, Imgproc.COLOR_RGB2GRAY);
+        faceImageMat = tempMat;
 
-
-        List<Rectangle> eyeCentersList = mEyeDetector.detect(faceImage);
+        List<Rectangle> eyeRects = mEyeDetector.detect(faceImage);
 
         //Checks to see that exactly two eyes are detected
-        if(eyeCentersList.size() != 2){
-            //Log.e(EYE ARRAY SIZE ERROR, "eye detect array size= " + eyeCentersList.size());
-            return null;
+        if(eyeRects.size() != 2) {
+            //Log.e(EYE ARRAY SIZE ERROR, "eye detect array size= " + eyeRects.size());
+            return new Image(faceImageMat);
         }
-
-        //Initialize Matrix for eye orientation
-        Mat eyeMat = new Mat(2, 3, CvType.CV_32FC1); //2x3 Matrix holding 3 pairs of point coords
-
-        //Create third point per OpenCv's requirements in estimateRigidTransform of 3 pairs of points
-        PointF third = thirdEquilateralPoint(eyeCentersList.get(0).getCenter(), eyeCentersList.get(1).getCenter());
-
-        //Input point information into Matrix
-        putInMat(eyeMat, 0, (int) eyeCentersList.get(0).centerX(), (int) eyeCentersList.get(0).centerY());
-        putInMat(eyeMat, 1, (int) eyeCentersList.get(1).centerX(), (int) eyeCentersList.get(1).centerY());
-        putInMat(eyeMat, 2, (int) third.x, (int) third.y);
+        Mat eyeMat = calcEyeMat(eyeRects);
 
         //Apply estimateRigidTransform's transformation Matrix to the face's matrix using warpAffine
 
-        org.opencv.imgproc.Imgproc.warpAffine(
+        Mat imageTransform = Video.estimateRigidTransform(eyeMat, mReferenceEyePoints, false);
+
+        if (imageTransform.cols() == 0 || imageTransform.rows() == 0) {
+            return new Image(faceImageMat);
+        }
+        Imgproc.warpAffine(
                 faceImageMat,
-                faceImageMat,
-                org.opencv.video.Video.estimateRigidTransform(faceImageMat,
-                        eyeMat,
-                        false),
-                faceImageMat.size());
+                tempMat,
+                imageTransform,
+                new Size(STANDARD_IMAGE_WIDTH, STANDARD_IMAGE_HEIGHT));
+        faceImageMat = tempMat;
 
         return new Image(faceImageMat);
     }
-    //puts information into a Matrix
-    private void putInMat(Mat m, int i, int x, int y){
-        m.put(0, i, x);
-        m.put(1, i, y);
+
+    private static Mat calcEyeMat(List<Rectangle> eyeRects) {
+        return calcEyeMat(eyeRects.get(0).getCenter(), eyeRects.get(1).getCenter());
     }
+
+    private static Mat calcEyeMat(PointF... eyeCenter) {
+        Mat eyeMat = new Mat(1, 3, CvType.CV_32FC2);
+
+        putInMat(eyeMat, 0, eyeCenter[0]);
+        putInMat(eyeMat, 1, eyeCenter[1]);
+        putInMat(eyeMat, 2, thirdEquilateralPoint(eyeCenter));
+
+        return eyeMat;
+    }
+
+    //puts information into a Matrix
+    private static void putInMat(Mat m, int pointIndex, PointF point) {
+        m.put(0, pointIndex, point.x, point.y);
+    }
+
     //Creates third point of an equilateral triangle pointing downwards
-    private PointF thirdEquilateralPoint(PointF point1, PointF point2){
-        float length = Math.abs(point1.x - point2.x);
-        return new PointF((point1.x + point2.x)/2, (float) (point1.y - Math.hypot(length, length/2)));
+    private static PointF thirdEquilateralPoint(PointF[] eyeCenter) {
+        float length = Math.abs(eyeCenter[0].x - eyeCenter[1].x);
+
+        float xVal = (eyeCenter[0].x + eyeCenter[1].x) / 2;
+        float yVal = (float) (eyeCenter[0].y - Math.hypot(length, length / 2));
+
+        return new PointF(xVal, yVal);
     }
 
     public native void close();
@@ -214,7 +239,9 @@ public final class FaceRecognition {
         private long mNativePtr;
     }
 
-    private double mConfidenceThreshold = 40.0;
+    private static Mat mReferenceEyePoints;
+
+    private double mConfidenceThreshold = 70.0;
     private Set<Long> mIdSet = new HashSet<>();
     private EyeDetector mEyeDetector;
     private long mNativePtr;

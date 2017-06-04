@@ -58,9 +58,10 @@ private:
         labelIndexes.reserve(labelStrings.size());
 
         for (size_t i = 0; i < labelStrings.size(); ++i, ++m_counter) {
+            m_faceRecognizer->setLabelInfo(m_counter, labelStrings[i]);
+
             __android_log_print(ANDROID_LOG_DEBUG, "FaceRecognition", "Label '%s' added at index %d.", labelStrings[i].c_str(), m_counter);
 
-            m_faceRecognizer->setLabelInfo(m_counter, labelStrings[i]);
             labelIndexes.push_back(m_counter);
         }
         return labelIndexes;

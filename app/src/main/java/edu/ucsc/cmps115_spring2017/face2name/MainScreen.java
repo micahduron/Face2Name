@@ -19,7 +19,6 @@ import org.opencv.android.OpenCVLoader;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import edu.ucsc.cmps115_spring2017.face2name.AppStateMachine.AppState;
 import edu.ucsc.cmps115_spring2017.face2name.CV.FaceRecognition;
@@ -115,6 +114,10 @@ public class MainScreen
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    if (mFaceID == null) {
+                        mFaceID = Identity.makeIdentity(mFaceImage);
+                        mFaceRecognizer.addFace(mFaceID);
+                    }
                     mFaceID.name = v.getText().toString();
                     mIdentityStorage.storeIdentity(mFaceID);
 
@@ -203,11 +206,11 @@ public class MainScreen
                 drawFaceRegions();
                 break;
             case FACE_SELECTED:
-                Image faceImage = getFaceImage(mSelectedFace);
-                FaceRecognition.RecognitionResult identifyResult = mFaceRecognizer.identify(faceImage);
+                mFaceImage = getFaceImage(mSelectedFace);
+                FaceRecognition.RecognitionResult identifyResult = mFaceRecognizer.identify(mFaceImage);
 
                 if (!identifyResult.faceFound()) {
-                    mFaceID = mFaceRecognizer.addFace(faceImage);
+                    mFaceID = null;
                     showNameBox(null);
                 } else {
                     Identity recogIdent = identifyResult.getIdentity();
@@ -286,14 +289,23 @@ public class MainScreen
         mPreviewBitmap = (mPreviewBitmap == null ? mCameraPreview.getBitmap() : mCameraPreview.getBitmap(mPreviewBitmap));
         Bitmap croppedImage = Bitmap.createBitmap(mPreviewBitmap, (int) faceRect.left, (int) faceRect.top, (int) faceRect.width(), (int) faceRect.height());
 
-        return FaceRecognition.normalizeFace(new Image(croppedImage));
+        return mFaceRecognizer.normalizeFace(new Image(croppedImage));
     }
 
     private List<Identity> getTrainingSet() {
         if (mIdentityStorage.countIdentities() > 0) {
-            return mIdentityStorage.dumpIdentities();
+            return getDBTrainingSet();
         }
         return generateSeedTrainingSet();
+    }
+
+    private List<Identity> getDBTrainingSet() {
+        List<Identity> identities = mIdentityStorage.dumpIdentities();
+
+        for (Identity ident : identities) {
+            Image.toGrayscale(ident.image);
+        }
+        return identities;
     }
 
     private List<Identity> generateSeedTrainingSet() {
@@ -303,11 +315,11 @@ public class MainScreen
         };
         List<Identity> seedIdentities = new ArrayList<>(seedFaces.length);
 
-        for (final Bitmap faceImage : seedFaces) {
-            long id = UUID.randomUUID().getLeastSignificantBits();
-            Image normalizedFace = FaceRecognition.normalizeFace(new Image(faceImage));
-            Identity seedIdentity = new Identity(id, null, normalizedFace);
+        for (final Bitmap faceBitmap : seedFaces) {
+            Image faceImage = new Image(faceBitmap);
+            Image.toGrayscale(faceImage);
 
+            Identity seedIdentity = Identity.makeIdentity(faceImage);
             seedIdentities.add(seedIdentity);
         }
         return seedIdentities;
@@ -329,7 +341,7 @@ public class MainScreen
     private List<Rectangle> mFaceRegions = new ArrayList<>();
     private Rectangle mSelectedFace;
     private FaceRecognition mFaceRecognizer;
-    private Identity ident;
     private Identity mFaceID;
     private IdentityStorage mIdentityStorage;
+    private Image mFaceImage;
 }
