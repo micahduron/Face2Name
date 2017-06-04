@@ -17,6 +17,8 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.ucsc.cmps115_spring2017.face2name.Utils.Image;
+
 /**
  * Created by micah on 4/29/17.
  */
@@ -351,13 +353,16 @@ public final class IdentityStorage extends SQLiteOpenHelper {
         } catch (FileNotFoundException ex) {
             throw new RuntimeException("Could not store face image.");
         }
-        identity.image.compress(Bitmap.CompressFormat.JPEG, 80, outStream);
+        identity.image.getBitmap().compress(Bitmap.CompressFormat.JPEG, 80, outStream);
     }
 
-    private Bitmap getIdentityFace(Identity identity) {
+    private Image getIdentityFace(Identity identity) {
         File imageFile = getFaceFile(identity);
 
-        return imageFile.exists() ? BitmapFactory.decodeFile(imageFile.getPath()) : null;
+        if (imageFile.exists()) {
+            return new Image(BitmapFactory.decodeFile(imageFile.getAbsolutePath()));
+        }
+        return null;
     }
 
     private class AsyncQueryResult<T> {

@@ -16,10 +16,6 @@ public class AppStateMachine {
          */
         IDLE,
         /**
-         * The screen has been tapped by the user.
-         */
-        SCREEN_TAPPED,
-        /**
          * The camera preview is paused.
          */
         SCREEN_PAUSED,
