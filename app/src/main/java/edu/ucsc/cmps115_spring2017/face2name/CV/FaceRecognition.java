@@ -3,6 +3,7 @@ package edu.ucsc.cmps115_spring2017.face2name.CV;
 import android.content.Context;
 import android.graphics.PointF;
 
+
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
@@ -13,6 +14,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.lang.Math;
+
 
 
 import edu.ucsc.cmps115_spring2017.face2name.Identity.Identity;
@@ -28,6 +31,7 @@ public final class FaceRecognition {
     public static final int FACE_FOUND = 1 << 1;
 
     private static final int RECOG_FAILED = 0;
+
 
     private static final int STANDARD_IMAGE_HEIGHT = 100;
     private static final int STANDARD_IMAGE_WIDTH = 100;
@@ -106,7 +110,6 @@ public final class FaceRecognition {
             return new RecognitionResult(RECOG_SUCCESS);
         }
         Identity ident = new Identity(identResult.id, null, faceImage);
-
         return new RecognitionResult(RECOG_SUCCESS | FACE_FOUND, ident);
     }
 

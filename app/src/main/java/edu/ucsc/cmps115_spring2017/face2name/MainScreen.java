@@ -42,6 +42,7 @@ public class MainScreen
         if (!OpenCVLoader.initDebug()) {
             Log.e("OpenCV", "Failed to load library.");
         }
+
         System.loadLibrary("native-lib");
     }
 
