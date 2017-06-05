@@ -58,11 +58,6 @@ public class MainScreen
 
         setContentView(R.layout.activity_main_screen);
         mStateMachine = new AppStateMachine(AppState.INIT, this);
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
 
         mInputManager = (InputMethodManager) getSystemService(MainScreen.INPUT_METHOD_SERVICE);
 
@@ -78,6 +73,11 @@ public class MainScreen
 
         List<Identity> trainingSet = getTrainingSet();
         mFaceRecognizer.initialize(trainingSet);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
 
         mLayerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
