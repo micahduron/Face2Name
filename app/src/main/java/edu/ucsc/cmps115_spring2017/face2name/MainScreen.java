@@ -50,7 +50,6 @@ public class MainScreen
         super.onCreate(savedInstanceState);
 
         mIdentityStorage = new IdentityStorage(this);
-        mIdentityStorage.clearIdentities();
 
         mFaceRecognizer = new FaceRecognition(this);
 
