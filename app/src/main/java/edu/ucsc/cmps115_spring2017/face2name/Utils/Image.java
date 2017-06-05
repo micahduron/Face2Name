@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 /**
  * Created by micah on 5/31/17.
@@ -44,6 +45,9 @@ public class Image {
      * @param bitmap the image to be stored
      */
     public void setImage(Bitmap bitmap) {
+        if (bitmap == null) {
+            throw new IllegalArgumentException("Input cannot be null");
+        }
         mBitmap = bitmap;
         mRepr = ReprType.REPR_BITMAP;
 
@@ -56,6 +60,9 @@ public class Image {
      * @param mat the image to be stored
      */
     public void setImage(Mat mat) {
+        if (mat == null) {
+            throw new IllegalArgumentException("Input cannot be null.");
+        }
         mMat = mat;
         mRepr = ReprType.REPR_MAT;
 
@@ -99,6 +106,13 @@ public class Image {
      */
     public boolean isMat() {
         return getRepr() == ReprType.REPR_MAT;
+    }
+
+    public static void toGrayscale(Image image) {
+        Mat bwImage = new Mat();
+        Imgproc.cvtColor(image.getMat(), bwImage, Imgproc.COLOR_RGB2GRAY);
+
+        image.setImage(bwImage);
     }
 
     private static Bitmap matToBitmap(Mat mat) {

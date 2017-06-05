@@ -1,7 +1,10 @@
 package edu.ucsc.cmps115_spring2017.face2name.CV;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 
@@ -27,7 +30,6 @@ public class EyeDetector {
 
         mEyeClassifier.detectMultiScale(image.getMat(), rectMat);
 
-        //Get Eye Center Points from here
         Rect[] eyeRects = rectMat.toArray();
         List<Rectangle> result = new ArrayList<>(eyeRects.length);
 

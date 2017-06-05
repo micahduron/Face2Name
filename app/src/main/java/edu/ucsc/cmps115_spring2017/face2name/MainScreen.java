@@ -1,6 +1,7 @@
 package edu.ucsc.cmps115_spring2017.face2name;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,10 +16,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.opencv.android.OpenCVLoader;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import edu.ucsc.cmps115_spring2017.face2name.AppStateMachine.AppState;
+import edu.ucsc.cmps115_spring2017.face2name.CV.FaceRecognition;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.AutoFocusCapability;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.CameraPreview;
 import edu.ucsc.cmps115_spring2017.face2name.Camera.FaceDetectionCapability;
@@ -27,6 +30,7 @@ import edu.ucsc.cmps115_spring2017.face2name.Camera.OrientationCapability;
 import edu.ucsc.cmps115_spring2017.face2name.Identity.Identity;
 import edu.ucsc.cmps115_spring2017.face2name.Identity.IdentityStorage;
 import edu.ucsc.cmps115_spring2017.face2name.Layer.LayerView;
+import edu.ucsc.cmps115_spring2017.face2name.Utils.Image;
 import edu.ucsc.cmps115_spring2017.face2name.Utils.Rectangle;
 
 public class MainScreen
@@ -38,6 +42,8 @@ public class MainScreen
         if (!OpenCVLoader.initDebug()) {
             Log.e("OpenCV", "Failed to load library.");
         }
+
+        System.loadLibrary("native-lib");
     }
 
     @Override
@@ -45,8 +51,9 @@ public class MainScreen
         super.onCreate(savedInstanceState);
 
         mIdentityStorage = new IdentityStorage(this);
-        // NOTE: This is here for testing purposes. Will be removed before release.
         mIdentityStorage.clearIdentities();
+
+        mFaceRecognizer = new FaceRecognition(this);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -68,7 +75,10 @@ public class MainScreen
         mCameraPreview.setCapabilities(mOrientation, mFaceDetector, autoFocus);
 
         mLayerView = (LayerView) findViewById(R.id.layer_view);
-        mNameBox = (EditText)findViewById(R.id.name_text);
+        mNameBox = (EditText) findViewById(R.id.name_text);
+
+        List<Identity> trainingSet = getTrainingSet();
+        mFaceRecognizer.initialize(trainingSet);
 
         mLayerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -105,8 +115,12 @@ public class MainScreen
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    mCurrentIdentity.name = v.getText().toString();
-                    mIdentityStorage.storeIdentity(mCurrentIdentity);
+                    if (mFaceID == null) {
+                        mFaceID = Identity.makeIdentity(mFaceImage);
+                        mFaceRecognizer.addFace(mFaceID);
+                    }
+                    mFaceID.name = v.getText().toString();
+                    mIdentityStorage.storeIdentity(mFaceID);
 
                     mStateMachine.setState(AppState.SCREEN_PAUSED);
 
@@ -129,6 +143,13 @@ public class MainScreen
         super.onPause();
 
         mCameraPreview.release();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        mFaceRecognizer.close();
     }
 
     @Override
@@ -186,9 +207,20 @@ public class MainScreen
                 drawFaceRegions();
                 break;
             case FACE_SELECTED:
-                Identity ident = mIdentityStorage.getIdentity(mCurrentIdentity);
+                mFaceImage = getFaceImage(mSelectedFace);
+                FaceRecognition.RecognitionResult identifyResult = mFaceRecognizer.identify(mFaceImage);
 
-                showNameBox(ident != null ? ident.name : null);
+                if (!identifyResult.faceFound()) {
+                    mFaceID = null;
+                    showNameBox(null);
+                } else {
+                    Identity recogIdent = identifyResult.getIdentity();
+                    Identity dbIdent = mIdentityStorage.getIdentity(recogIdent);
+
+                    mFaceID = dbIdent != null ? dbIdent : recogIdent;
+
+                    showNameBox(mFaceID.name);
+                }
                 break;
         }
     }
@@ -254,11 +286,48 @@ public class MainScreen
         drawer.endDrawing();
     }
 
-    // Returns a bitmap cropped to the rectangle's dimensions
-    private Bitmap getBM(Rectangle faceRect){
-        mPreviewBitmap = mPreviewBitmap == null ? mCameraPreview.getBitmap() : mCameraPreview.getBitmap(mPreviewBitmap);
+    private Image getFaceImage(Rectangle faceRect) {
+        mPreviewBitmap = (mPreviewBitmap == null ? mCameraPreview.getBitmap() : mCameraPreview.getBitmap(mPreviewBitmap));
+        Bitmap croppedImage = Bitmap.createBitmap(mPreviewBitmap, (int) faceRect.left, (int) faceRect.top, (int) faceRect.width(), (int) faceRect.height());
 
-        return  Bitmap.createBitmap(mPreviewBitmap, (int) faceRect.left, (int) faceRect.top, (int)faceRect.width(), (int)faceRect.height());
+        return mFaceRecognizer.normalizeFace(new Image(croppedImage));
+    }
+
+    private List<Identity> getTrainingSet() {
+        if (mIdentityStorage.countIdentities() > 0) {
+            return getDBTrainingSet();
+        }
+        return generateSeedTrainingSet();
+    }
+
+    private List<Identity> getDBTrainingSet() {
+        List<Identity> identities = mIdentityStorage.dumpIdentities();
+
+        for (Identity ident : identities) {
+            Image.toGrayscale(ident.image);
+        }
+        return identities;
+    }
+
+    private List<Identity> generateSeedTrainingSet() {
+        Bitmap[] seedFaces = new Bitmap[] {
+                getBitmapFromResource(R.drawable.seedface_01),
+                getBitmapFromResource(R.drawable.seedface_02)
+        };
+        List<Identity> seedIdentities = new ArrayList<>(seedFaces.length);
+
+        for (final Bitmap faceBitmap : seedFaces) {
+            Image faceImage = new Image(faceBitmap);
+            Image.toGrayscale(faceImage);
+
+            Identity seedIdentity = Identity.makeIdentity(faceImage);
+            seedIdentities.add(seedIdentity);
+        }
+        return seedIdentities;
+    }
+
+    private Bitmap getBitmapFromResource(int resId) {
+        return BitmapFactory.decodeResource(getResources(), resId);
     }
 
     private AppStateMachine mStateMachine;
@@ -272,7 +341,8 @@ public class MainScreen
     private Bitmap mPreviewBitmap;
     private List<Rectangle> mFaceRegions = new ArrayList<>();
     private Rectangle mSelectedFace;
-    // NOTE: Initialized to a test value.
-    private Identity mCurrentIdentity = new Identity(42, null, null);
+    private FaceRecognition mFaceRecognizer;
+    private Identity mFaceID;
     private IdentityStorage mIdentityStorage;
+    private Image mFaceImage;
 }
