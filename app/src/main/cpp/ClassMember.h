@@ -6,22 +6,22 @@
 #define FACE2NAME_CLASSMEMBER_H
 
 #include <jni.h>
-#include "JNITypeConverters.h"
 #include "JNITypeUtils.h"
+#include "TypeConverter.h"
 
 namespace JNI {
     template <typename JavaT, typename Converter>
     class ClassMember;
 
-    template<typename JavaT, typename Converter = JNI::Converter::Identity<JavaT>>
+    template<typename JavaT, typename NativeT = JavaT>
     class ClassMemberDescriptor {
     public:
         ClassMemberDescriptor(const char* memberName) :
                 m_memberName{ memberName }
         {}
 
-        ClassMember<JavaT, Converter> operator () (JNIEnv* env, jobject obj) {
             if (m_jniEnv == nullptr) {
+        ClassMember<JavaT, NativeT> operator () (JNIEnv* env, jobject obj) {
                 m_jniEnv = env;
 
                 jclass objClass = env->GetObjectClass(obj);
@@ -36,20 +36,20 @@ namespace JNI {
         const char* m_memberName;
     };
 
-    template <typename JavaT, typename Converter>
+    template <typename JavaT, typename NativeT>
     class ClassMember {
+        typedef JNI::TypeConverter<JavaT, NativeT> Converter;
+
     public:
         ClassMember(JNIEnv* env, jobject obj, jfieldID fieldId) :
                 m_jniEnv{ env },
                 m_javaObj{ obj },
-                m_fieldId{ fieldId }
+                m_fieldId{ fieldId },
+                convertType{ env }
         {}
 
         typename Converter::converted_type get() const {
-            JavaT rawVal = getRaw();
-            Converter converter;
-
-            return converter(m_jniEnv, rawVal);
+            return convertType(getRaw());
         }
 
         JavaT getRaw() const {
@@ -57,9 +57,7 @@ namespace JNI {
         }
 
         ClassMember& set(const typename Converter::converted_type& value) {
-            Converter converter;
-
-            return setRaw(converter(m_jniEnv, value));
+            return setRaw(convertType(value));
         }
 
         ClassMember& setRaw(JavaT rawVal) {
@@ -72,15 +70,28 @@ namespace JNI {
         JNIEnv* m_jniEnv;
         jobject m_javaObj;
         jfieldID m_fieldId;
+
+        Converter convertType;
     };
 
-    template <typename JavaT, typename Converter = JNI::Converter::Identity<JavaT>>
-    typename Converter::converted_type GetStaticMember(JNIEnv* env, jclass objClass, const char* memberName) {
-        jfieldID fieldId = env->GetStaticFieldID(objClass, memberName, JNI::TypeTraits<JavaT>::signature);
-        JavaT rawVal = JNI::StaticFieldGetter<JavaT>(env, objClass, fieldId);
-        Converter converter;
+    template <typename SrcT, typename DstT = SrcT>
+    DstT GetStaticMember(JNIEnv* env, jclass objClass, const char* memberName);
 
-        return converter(env, rawVal);
+    template <typename SrcT, typename DstT = SrcT>
+    DstT GetStaticMember(JNIEnv* env, jclass objClass, jfieldID fieldId);
+
+    template <typename SrcT, typename DstT>
+    DstT GetStaticMember(JNIEnv* env, jclass objClass, const char* memberName) {
+        jfieldID fieldId = env->GetStaticFieldID(objClass, memberName, JNI::TypeTraits<SrcT>::signature);
+
+        return JNI::GetStaticMember<SrcT, DstT>(env, objClass, fieldId);
+    }
+
+    template <typename SrcT, typename DstT>
+    DstT GetStaticMember(JNIEnv* env, jclass objClass, jfieldID fieldId) {
+        SrcT rawVal = JNI::StaticFieldGetter<SrcT>(env, objClass, fieldId);
+
+        return JNI::TypeConverter<SrcT, DstT>::convert(env, rawVal);
     };
 }
 
