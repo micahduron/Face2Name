@@ -2,12 +2,12 @@
 #include <android/log.h>
 #include <opencv2/core.hpp>
 #include "FaceRecognition.h"
-#include "JNITypeConverters.h"
+#include "TypeConverter.h"
 #include "ClassMember.h"
 #include "FaceModel.h"
 
-static thread_local JNI::ClassMemberDescriptor<jlong, JNI::Converter::Pointer<FaceRecognition>> faceRecogPtrDesc("mNativePtr");
-static thread_local JNI::ClassMemberDescriptor<jlong, JNI::Converter::Pointer<FaceModel>> faceModelPtrDesc("mNativePtr");
+static thread_local JNI::ClassMemberDescriptor<jlong, FaceRecognition*> faceRecogPtrDesc("mNativePtr");
+static thread_local JNI::ClassMemberDescriptor<jlong, FaceModel*> faceModelPtrDesc("mNativePtr");
 static thread_local JNI::ClassMemberDescriptor<jdouble> confidenceThresholdDesc("mConfidenceThreshold");
 
 static int RECOG_SUCCESS;
@@ -21,7 +21,7 @@ Java_edu_ucsc_cmps115_1spring2017_face2name_CV_FaceRecognition_00024FaceModel_na
     auto faceModelPtr = faceModelPtrDesc(env, instance);
 
     cv::Mat faceImage = *reinterpret_cast<cv::Mat*>(imagePtr);
-    auto label = JNI::Converter::convertJString<cv::String>(env, label_);
+    auto label = JNI::TypeConverter<jstring, cv::String>::convert(env, label_);
 
     faceModelPtr.get()->addToModel(faceImage, label);
 }
@@ -76,7 +76,7 @@ Java_edu_ucsc_cmps115_1spring2017_face2name_CV_FaceRecognition_native_1addToMode
                                                                                   jstring id) {
     auto faceRecogPtr = faceRecogPtrDesc(env, instance);
     cv::Mat faceImage = *reinterpret_cast<cv::Mat*>(matPtr);
-    cv::String labelString = JNI::Converter::convertJString<cv::String>(env, id);
+    cv::String labelString = JNI::TypeConverter<jstring, cv::String>::convert(env, id);
 
     faceRecogPtr.get()->addToModel(faceImage, labelString);
 }
