@@ -20,8 +20,8 @@ namespace JNI {
                 m_memberName{ memberName }
         {}
 
-            if (m_jniEnv == nullptr) {
         ClassMember<JavaT, NativeT> operator () (JNIEnv* env, jobject obj) {
+            if (m_jniEnv != env) {
                 m_jniEnv = env;
 
                 jclass objClass = env->GetObjectClass(obj);
