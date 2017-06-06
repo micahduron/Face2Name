@@ -75,6 +75,27 @@ namespace JNI {
     };
 
     template <typename SrcT, typename DstT = SrcT>
+    DstT GetMember(JNIEnv* env, jobject obj, const char* memberName);
+
+    template <typename SrcT, typename DstT = SrcT>
+    DstT GetMember(JNIEnv* env, jobject obj, jfieldID fieldId);
+
+    template <typename SrcT, typename DstT>
+    DstT GetMember(JNIEnv* env, jobject obj, const char* memberName) {
+        jclass objClass = env->GetObjectClass(obj);
+        jfieldID fieldId = env->GetFieldID(objClass, memberName, JNI::TypeTraits<SrcT>::signature);
+
+        return JNI::GetMember<SrcT, DstT>(env, obj, fieldId);
+    };
+
+    template <typename SrcT, typename DstT>
+    DstT GetMember(JNIEnv* env, jobject obj, jfieldID fieldId) {
+        SrcT rawVal = JNI::FieldGetter<SrcT>(env, obj, fieldId);
+
+        return JNI::TypeConverter<SrcT, DstT>::convert(env, rawVal);
+    };
+
+    template <typename SrcT, typename DstT = SrcT>
     DstT GetStaticMember(JNIEnv* env, jclass objClass, const char* memberName);
 
     template <typename SrcT, typename DstT = SrcT>
