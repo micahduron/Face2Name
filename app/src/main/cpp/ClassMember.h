@@ -28,7 +28,7 @@ namespace JNI {
                 m_fieldId = env->GetFieldID(objClass, m_memberName, JNI::TypeTraits<JavaT>::signature);
             }
             return { m_jniEnv, obj, m_fieldId };
-        };
+        }
 
     private:
         JNIEnv* m_jniEnv;
@@ -86,14 +86,14 @@ namespace JNI {
         jfieldID fieldId = env->GetFieldID(objClass, memberName, JNI::TypeTraits<SrcT>::signature);
 
         return JNI::GetMember<SrcT, DstT>(env, obj, fieldId);
-    };
+    }
 
     template <typename SrcT, typename DstT>
     DstT GetMember(JNIEnv* env, jobject obj, jfieldID fieldId) {
         SrcT rawVal = JNI::FieldGetter<SrcT>(env, obj, fieldId);
 
         return JNI::TypeConverter<SrcT, DstT>::convert(env, rawVal);
-    };
+    }
 
     template <typename SrcT, typename DstT = SrcT>
     DstT GetStaticMember(JNIEnv* env, jclass objClass, const char* memberName);
@@ -113,7 +113,7 @@ namespace JNI {
         SrcT rawVal = JNI::StaticFieldGetter<SrcT>(env, objClass, fieldId);
 
         return JNI::TypeConverter<SrcT, DstT>::convert(env, rawVal);
-    };
+    }
 }
 
 #endif //FACE2NAME_CLASSMEMBER_H
